@@ -13,4 +13,10 @@ public interface EncuestaService {
     //Funcionalidad 1: Crear encuesta
     public Encuesta crearEncuesta(Encuesta encuesta) throws InputValidationException;
 
+    //Funcionalidad 2: Buscar encuesta por ID
+    public Encuesta buscarEncuestaPorId(Long encuestaId) throws InstanceNotFoundException;
+
+    //Funcionalidad x: Eliminar encuesta
+    public void eliminarEncuesta(Long encuestaId) throws InstanceNotFoundException;
+
 }
