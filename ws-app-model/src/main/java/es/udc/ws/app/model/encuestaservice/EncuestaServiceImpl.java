@@ -15,6 +15,7 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class EncuestaServiceImpl implements EncuestaService {
 
@@ -80,6 +81,18 @@ public class EncuestaServiceImpl implements EncuestaService {
             throw new RuntimeException(e);
         }
     }
+
+    @Override
+    public List<Encuesta> buscarEncuestasPorPalabraClave(String keyword, boolean soloActivas) {
+
+        try (Connection connection = dataSource.getConnection()) {
+            return encuestaDao.findByKeyword(connection, keyword, soloActivas);
+
+        } catch (SQLException | InstanceNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 
     @Override
     public void eliminarEncuesta(Long encuestaId) throws InstanceNotFoundException {

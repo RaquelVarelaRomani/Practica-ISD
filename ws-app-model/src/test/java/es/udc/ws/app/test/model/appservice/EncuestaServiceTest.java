@@ -136,4 +136,48 @@ public class EncuestaServiceTest {
              }
         }
     }
+
+    // Buscar encuesta por palabra clave
+    @Test
+    public void testBuscarEncuestasPorPalabraClave() throws InputValidationException, InstanceNotFoundException {
+        Encuesta encuesta1 = getValidEncuesta("¿Cuál es tu color favorito?");
+        Encuesta encuesta2 = getValidEncuesta("¿Cuál es tu comida favorita?");
+        Encuesta encuesta3 = getValidEncuesta("¿Cuál es tu deporte favorito?");
+
+        Encuesta creada1 = null;
+        Encuesta creada2 = null;
+        Encuesta creada3 = null;
+
+        try {
+            creada1 = createEncuesta(encuesta1);
+            creada2 = createEncuesta(encuesta2);
+            creada3 = createEncuesta(encuesta3);
+
+            // Buscar por palabra clave "comida"
+            var resultados = encuestaService.buscarEncuestasPorPalabraClave("comida", false);
+            assertEquals(1, resultados.size(), "Debe encontrar una encuesta con la palabra 'comida'");
+            assertEquals(creada2.getEncuestaId(), resultados.getFirst().getEncuestaId(),
+                    "El ID de la encuesta encontrada debe coincidir con la creada2");
+
+            // Buscar por palabra clave "favorito"
+            resultados = encuestaService.buscarEncuestasPorPalabraClave("favorito", false);
+            assertEquals(2, resultados.size(), "Debe encontrar tres encuestas con la palabra 'favorito'");
+
+            // Buscar por palabra clave que no existe
+            resultados = encuestaService.buscarEncuestasPorPalabraClave("inexistente", false);
+            assertEquals(0, resultados.size(), "No debe encontrar encuestas con la palabra 'inexistente'");
+
+        } finally {
+            // Limpieza
+            if (creada1 != null) {
+                encuestaService.eliminarEncuesta(creada1.getEncuestaId());
+            }
+            if (creada2 != null) {
+                encuestaService.eliminarEncuesta(creada2.getEncuestaId());
+            }
+            if (creada3 != null) {
+                encuestaService.eliminarEncuesta(creada3.getEncuestaId());
+            }
+        }
+    }
 }

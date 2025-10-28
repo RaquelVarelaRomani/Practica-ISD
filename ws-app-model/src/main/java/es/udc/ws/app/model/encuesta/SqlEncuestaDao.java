@@ -14,7 +14,8 @@ public interface SqlEncuestaDao {
     public void remove(Connection connection, Long encuestaId)
                     throws InstanceNotFoundException;
 
-    //public List<Encuesta> findByKeyword(Connection connection, String keyword, boolean soloActivas);
+    public List<Encuesta> findByKeyword(Connection connection, String keyword, boolean soloActivas)
+                                throws InstanceNotFoundException;
 
 }
 

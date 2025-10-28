@@ -16,6 +16,9 @@ public interface EncuestaService {
     //Funcionalidad 2: Buscar encuesta por ID
     public Encuesta buscarEncuestaPorId(Long encuestaId) throws InstanceNotFoundException;
 
+    //Funcionalidad 3: Buscar encuestas por palabra clave
+    public List<Encuesta> buscarEncuestasPorPalabraClave(String keyword, boolean soloActivas);
+
     //Funcionalidad x: Eliminar encuesta
     public void eliminarEncuesta(Long encuestaId) throws InstanceNotFoundException;
 
