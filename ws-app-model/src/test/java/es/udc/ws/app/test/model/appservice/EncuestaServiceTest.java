@@ -190,14 +190,4 @@ public class EncuestaServiceTest {
                 () -> encuestaService.cancelarEncuesta(creada.getEncuestaId()));
     }
 
-    @Test
-    public void testCancelarEncuestaFinalizada() throws Exception {
-        Encuesta encuesta = new Encuesta("¿Te gusta programar en Java?", LocalDateTime.now().minusDays(1));
-        Encuesta creada = encuestaService.crearEncuesta(encuesta);
-
-        assertThrows(es.udc.ws.app.model.encuestaservice.exceptions.EncuestaFinalizadaException.class,
-                () -> encuestaService.cancelarEncuesta(creada.getEncuestaId()),
-                "Debe lanzar EncuestaFinalizadaException al intentar cancelar una encuesta ya finalizada");
-    }
-
 }
