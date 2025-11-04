@@ -1,10 +1,7 @@
 package es.udc.ws.app.model.encuesta;
 
 import es.udc.ws.util.exceptions.InstanceNotFoundException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -114,4 +111,34 @@ public abstract class AbstractSqlEncuestaDao implements SqlEncuestaDao {
             throw new RuntimeException(e);
         }
     }
+
+    @Override
+    public void update(Connection connection, Encuesta encuesta)
+            throws InstanceNotFoundException {
+
+        String queryString = "UPDATE Encuesta "
+                + "SET pregunta = ?, fechaFin = ?, cancelada = ? "
+                + "WHERE encuestaId = ?";
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(queryString)) {
+
+            int i = 1;
+            preparedStatement.setString(i++, encuesta.getPregunta());
+            preparedStatement.setTimestamp(i++, Timestamp.valueOf(encuesta.getFechaFin()));
+            preparedStatement.setBoolean(i++, encuesta.isCancelada());
+            preparedStatement.setLong(i++, encuesta.getEncuestaId());
+
+            int updatedRows = preparedStatement.executeUpdate();
+
+            if (updatedRows == 0) {
+                throw new InstanceNotFoundException(
+                        encuesta.getEncuestaId(), Encuesta.class.getName());
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al actualizar la encuesta con ID="
+                    + encuesta.getEncuestaId(), e);
+        }
+    }
+
 }
