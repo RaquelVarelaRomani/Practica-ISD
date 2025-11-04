@@ -6,7 +6,7 @@ public class EncuestaCanceladaException extends Exception {
     private Long encuestaId;
 
     public EncuestaCanceladaException(Long encuestaId) {
-        super("La encuesta con ID=" + encuestaId + " está cancelada y no puede modificarse ni responderse.");
+        super("La encuesta con ID=" + encuestaId + " está cancelada");
         this.encuestaId = encuestaId;
     }
 
