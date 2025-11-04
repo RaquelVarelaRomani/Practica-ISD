@@ -6,6 +6,8 @@ import es.udc.ws.app.model.encuesta.Encuesta;
 import es.udc.ws.app.model.encuesta.Jdbc3CcSqlEncuestaDao;
 import es.udc.ws.app.model.encuesta.SqlEncuestaDao;
 import es.udc.ws.app.model.encuesta.SqlEncuestaDaoFactory;
+import es.udc.ws.app.model.encuestaservice.exceptions.EncuestaCanceladaException;
+import es.udc.ws.app.model.encuestaservice.exceptions.EncuestaFinalizadaException;
 import es.udc.ws.util.exceptions.InputValidationException;
 import es.udc.ws.util.exceptions.InstanceNotFoundException;
 import es.udc.ws.util.sql.DataSourceLocator;
@@ -119,6 +121,24 @@ public class EncuestaServiceImpl implements EncuestaService {
                 throw e;
 
             }
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al acceder a la base de datos", e);
+        }
+    }
+
+    @Override
+    public void cancelarEncuesta(Long encuestaId) throws InstanceNotFoundException, EncuestaFinalizadaException, EncuestaCanceladaException {
+        try (Connection connection = dataSource.getConnection()) {
+            Encuesta encuesta = encuestaDao.findById(connection, encuestaId);
+            if(encuesta.isCancelada()) {
+                throw new EncuestaCanceladaException(encuestaId);
+            }
+            if(LocalDateTime.now().isAfter(encuesta.getFechaFin())) {
+                throw new EncuestaFinalizadaException(encuestaId);
+            }
+            encuesta.setCancelada(true);
+            encuestaDao.update(connection, encuesta);
 
         } catch (SQLException e) {
             throw new RuntimeException("Error al acceder a la base de datos", e);
