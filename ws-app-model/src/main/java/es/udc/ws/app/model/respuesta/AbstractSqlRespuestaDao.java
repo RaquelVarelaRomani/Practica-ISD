@@ -1,18 +1,9 @@
 package es.udc.ws.app.model.respuesta;
 
 import es.udc.ws.util.exceptions.InstanceNotFoundException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
+import java.sql.*;
 
-/**
- * Partial implementation of {@code SqlRespuestaDao}
- * that supports the "responder encuesta" functionality (Funcionalidad 4).
- * The {@code create(Connection, Respuesta)} method remains abstract.
- */
+
 public abstract class AbstractSqlRespuestaDao implements SqlRespuestaDao {
 
     protected AbstractSqlRespuestaDao() {
