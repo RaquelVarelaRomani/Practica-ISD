@@ -3,8 +3,6 @@ package es.udc.ws.app.test.model.appservice;
 import static org.junit.jupiter.api.Assertions.*;
 import static es.udc.ws.app.model.util.ModelConstants.APP_DATA_SOURCE;
 
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.time.LocalDateTime;
 
 import javax.sql.DataSource;
@@ -17,9 +15,9 @@ import es.udc.ws.app.model.encuesta.Encuesta;
 import es.udc.ws.app.model.encuesta.SqlEncuestaDao;
 import es.udc.ws.app.model.encuesta.SqlEncuestaDaoFactory;
 import es.udc.ws.app.model.encuestaservice.EncuestaService;
-import es.udc.ws.app.model.encuestaservice.EncuestaServiceFactory;
 import es.udc.ws.util.exceptions.InputValidationException;
 import es.udc.ws.util.exceptions.InstanceNotFoundException;
+import es.udc.ws.app.model.encuestaservice.exceptions.*;
 import es.udc.ws.util.sql.DataSourceLocator;
 import es.udc.ws.util.sql.SimpleDataSource;
 
@@ -56,7 +54,6 @@ public class EncuestaServiceTest {
     private void removeEncuesta(Long encuestaId) {
 
         try {
-            //Este método solo funcionará cuando se implemente la funcionalidad de borrado
             System.out.println("Simulando borrado de encuesta con id: " + encuestaId);
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -130,7 +127,6 @@ public class EncuestaServiceTest {
 
         } finally {
 
-             //Limpieza: cuando implementemos remove descomentar esto
              if (encuestaCreada != null) {
                  encuestaService.eliminarEncuesta(encuestaCreada.getEncuestaId());
              }
@@ -180,4 +176,28 @@ public class EncuestaServiceTest {
             }
         }
     }
+    @Test
+    public void testCancelarEncuestaValida() throws Exception {
+        Encuesta encuesta = getValidEncuesta();
+        Encuesta creada = encuestaService.crearEncuesta(encuesta);
+
+        encuestaService.cancelarEncuesta(creada.getEncuestaId());
+
+        Encuesta cancelada = encuestaService.buscarEncuestaPorId(creada.getEncuestaId());
+        assertTrue(cancelada.isCancelada(), "La encuesta debe estar marcada como cancelada");
+
+        assertThrows(EncuestaCanceladaException.class,
+                () -> encuestaService.cancelarEncuesta(creada.getEncuestaId()));
+    }
+
+    @Test
+    public void testCancelarEncuestaFinalizada() throws Exception {
+        Encuesta encuesta = new Encuesta("¿Te gusta programar en Java?", LocalDateTime.now().minusDays(1));
+        Encuesta creada = encuestaService.crearEncuesta(encuesta);
+
+        assertThrows(es.udc.ws.app.model.encuestaservice.exceptions.EncuestaFinalizadaException.class,
+                () -> encuestaService.cancelarEncuesta(creada.getEncuestaId()),
+                "Debe lanzar EncuestaFinalizadaException al intentar cancelar una encuesta ya finalizada");
+    }
+
 }
