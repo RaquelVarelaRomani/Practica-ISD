@@ -19,6 +19,7 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class RespuestaServiceImpl implements RespuestaService {
 
@@ -104,6 +105,18 @@ public class RespuestaServiceImpl implements RespuestaService {
 
         } catch (SQLException e) {
             throw new RuntimeException("Error al acceder a la base de datos", e);
+        }
+    }
+
+    @Override
+    public List<Respuesta> obtenerRespuestas(Long encuestaId, boolean soloPositivas) throws InstanceNotFoundException {
+        try (Connection connection = dataSource.getConnection()) {
+            // Verificamos que la encuesta existe primero, para lanzar excepción si no está
+            encuestaDao.findById(connection, encuestaId);
+
+            return respuestaDao.findByEncuesta(connection, encuestaId, soloPositivas);
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al obtener respuestas", e);
         }
     }
 }

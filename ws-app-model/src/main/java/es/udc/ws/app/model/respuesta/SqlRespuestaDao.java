@@ -2,6 +2,7 @@ package es.udc.ws.app.model.respuesta;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.List;
 
 import es.udc.ws.util.exceptions.InstanceNotFoundException;
 
@@ -15,4 +16,7 @@ public interface SqlRespuestaDao {
 
     //Buscar una respuesta por encuesta y email (para saber si el usuario ya respondió)
     Respuesta findByEncuestaAndEmail(Connection connection, Long encuestaId, String emailUsuario) throws InstanceNotFoundException;
+
+    List<Respuesta> findByEncuesta(Connection connection, Long encuestaId, boolean soloPositivas)
+            throws SQLException;
 }

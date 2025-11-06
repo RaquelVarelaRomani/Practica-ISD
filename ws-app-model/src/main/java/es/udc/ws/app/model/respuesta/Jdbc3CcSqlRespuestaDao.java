@@ -1,6 +1,8 @@
 package es.udc.ws.app.model.respuesta;
 import java.sql.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Jdbc3CcSqlRespuestaDao extends AbstractSqlRespuestaDao {
 
@@ -42,6 +44,38 @@ public class Jdbc3CcSqlRespuestaDao extends AbstractSqlRespuestaDao {
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public List<Respuesta> findByEncuesta(Connection connection, Long encuestaId, boolean soloPositivas) throws SQLException {
+        StringBuilder query = new StringBuilder(
+                "SELECT respuestaId, encuestaId, emailUsuario, respuestaPositiva, fechaRespuesta FROM Respuesta WHERE encuestaId = ? "
+        );
+        if (soloPositivas) {
+            query.append("AND respuestaPositiva = TRUE ");
+        }
+        query.append("ORDER BY fechaRespuesta");
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query.toString())) {
+            preparedStatement.setLong(1, encuestaId);
+
+            ResultSet resultSet = preparedStatement.executeQuery();
+            List<Respuesta> respuestas = new ArrayList<>();
+
+            while (resultSet.next()) {
+                int i = 1;
+                Long respuestaId = resultSet.getLong(i++);
+                Long encId = resultSet.getLong(i++);
+                String emailUsuario = resultSet.getString(i++);
+                boolean respuestaPositiva = resultSet.getBoolean(i++);
+                java.sql.Timestamp fechaRespTimestamp = resultSet.getTimestamp(i++);
+                java.time.LocalDateTime fechaRespuesta = fechaRespTimestamp.toLocalDateTime();
+
+                respuestas.add(new Respuesta(respuestaId, encId, emailUsuario, respuestaPositiva, fechaRespuesta));
+            }
+
+            return respuestas;
         }
     }
 }
