@@ -1,0 +1,4 @@
+
+Commit 62f0e19
+    - Mensaje antiguo: Añadidos DAOs, EncuestaService y Añadido test de buscar
+    - Mensaje nuevo: [FUNC-1] [FUNC-2] Añadidas implementaciones de ambas funcionalidades en el DAO, Service y Test

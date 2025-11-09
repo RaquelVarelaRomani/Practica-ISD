@@ -111,7 +111,6 @@ public class RespuestaServiceImpl implements RespuestaService {
     @Override
     public List<Respuesta> obtenerRespuestas(Long encuestaId, boolean soloPositivas) throws InstanceNotFoundException {
         try (Connection connection = dataSource.getConnection()) {
-            // Verificamos que la encuesta existe primero, para lanzar excepción si no está
             encuestaDao.findById(connection, encuestaId);
 
             return respuestaDao.findByEncuesta(connection, encuestaId, soloPositivas);
