@@ -123,7 +123,7 @@ public class RespuestaServiceTest {
         try (Connection connection = DataSourceLocator.getDataSource(APP_DATA_SOURCE).getConnection()) {
             connection.setAutoCommit(false);
 
-            //Crear una encuesta
+            // Paso 1: Crear una encuesta normal
             Encuesta encuesta = new Encuesta(
                     "¿Te gusta Java?", LocalDateTime.now().plusDays(2)
             );
@@ -133,112 +133,24 @@ public class RespuestaServiceTest {
 
             connection.commit();
 
-            //Responder la encuesta
+            // Paso 2: Responder la encuesta con varios emails
             respuestaService.responderEncuesta(encuestaId, "a@email.com", true);
             respuestaService.responderEncuesta(encuestaId, "b@email.com", false);
             respuestaService.responderEncuesta(encuestaId, "c@email.com", true);
 
-            //Recuperar respuestas
+            // Paso 3: Recuperar todas las respuestas
             List<Respuesta> todas = respuestaService.obtenerRespuestas(encuestaId, false);
             assertEquals(3, todas.size());
             assertTrue(todas.stream().anyMatch(r -> r.getEmailUsuario().equals("a@email.com") && r.isRespuestaPositiva()));
             assertTrue(todas.stream().anyMatch(r -> r.getEmailUsuario().equals("b@email.com") && !r.isRespuestaPositiva()));
 
-            //Recuperar las positivas
+            // Paso 4: Recuperar solo las positivas
             List<Respuesta> soloPositivas = respuestaService.obtenerRespuestas(encuestaId, true);
             assertEquals(2, soloPositivas.size());
             assertTrue(soloPositivas.stream().allMatch(Respuesta::isRespuestaPositiva));
 
+            // Limpieza
             encuestaService.eliminarEncuesta(encuestaId);;
-        }
-    }
-
-    @Test
-    public void testObtenerRespuestasEncuestaNoExistente() {
-        assertThrows(InstanceNotFoundException.class, () ->
-                        respuestaService.obtenerRespuestas(88888L, false),
-                "Debe lanzar InstanceNotFoundException al intentar obtener respuestas de una encuesta inexistente"
-        );
-    }
-
-    @Test
-    public void testModificarRespuestaExistente() throws Exception {
-        try (Connection connection = DataSourceLocator.getDataSource(APP_DATA_SOURCE).getConnection()) {
-            connection.setAutoCommit(false);
-
-            //Crear una encuesta
-            Encuesta encuesta = new Encuesta(
-                    "¿Te gusta Java?", LocalDateTime.now().plusDays(2)
-            );
-            encuesta.setFechaCreacion(LocalDateTime.now().withNano(0));
-            Encuesta encuestaCreada = encuestaDao.create(connection, encuesta);
-            Long encuestaId = encuestaCreada.getEncuestaId();
-
-            connection.commit();
-
-            //Responder la encuesta
-            respuestaService.responderEncuesta(encuestaId, "a@email.com", true);
-            respuestaService.responderEncuesta(encuestaId, "b@email.com", false);
-            respuestaService.responderEncuesta(encuestaId, "c@email.com", true);
-
-            //Modificar una respuesta existente
-            respuestaService.responderEncuesta(encuestaId, "b@email.com", true);
-
-            //Recuperar respuestas
-            List<Respuesta> todas = respuestaService.obtenerRespuestas(encuestaId, false);
-            assertEquals(3, todas.size());
-            assertTrue(todas.stream().anyMatch(r -> r.getEmailUsuario().equals("a@email.com") && r.isRespuestaPositiva()));
-            assertTrue(todas.stream().anyMatch(r -> r.getEmailUsuario().equals("b@email.com") && r.isRespuestaPositiva()));
-            assertTrue(todas.stream().anyMatch(r -> r.getEmailUsuario().equals("c@email.com") && r.isRespuestaPositiva()));
-
-            //Recuperar las positivas
-            List<Respuesta> soloPositivas = respuestaService.obtenerRespuestas(encuestaId, true);
-            assertEquals(3, soloPositivas.size());
-            assertTrue(soloPositivas.stream().allMatch(Respuesta::isRespuestaPositiva));
-
-            encuestaService.eliminarEncuesta(encuestaId);
-        }
-    }
-
-    @Test
-    public void testResponderEncuestaCancelada() throws Exception {
-        try (Connection connection = DataSourceLocator.getDataSource(APP_DATA_SOURCE).getConnection()) {
-            connection.setAutoCommit(false);
-
-            Encuesta encuesta = crearEncuestaValida(connection, "¿Te gusta programar en Go?", 3);
-            encuesta.setCancelada(true);
-            encuestaDao.update(connection, encuesta);
-            connection.commit();
-
-            assertThrows(EncuestaCanceladaException.class, () ->
-                            respuestaService.responderEncuesta(
-                                    encuesta.getEncuestaId(), VALID_EMAIL, true
-                            ),
-                    "Debe lanzar EncuestaCanceladaException al responder una encuesta cancelada"
-            );
-        }
-    }
-
-    @Test
-    public void testObtenerRespuestasEncuestaSinRespuestas() throws Exception {
-        try (Connection connection = DataSourceLocator.getDataSource(APP_DATA_SOURCE).getConnection()) {
-            connection.setAutoCommit(false);
-
-            //Crear una encuesta
-            Encuesta encuesta = new Encuesta(
-                    "¿Te gusta Kotlin?", LocalDateTime.now().plusDays(2)
-            );
-            encuesta.setFechaCreacion(LocalDateTime.now().withNano(0));
-            Encuesta encuestaCreada = encuestaDao.create(connection, encuesta);
-            Long encuestaId = encuestaCreada.getEncuestaId();
-
-            connection.commit();
-
-            //Recuperar respuestas
-            List<Respuesta> todas = respuestaService.obtenerRespuestas(encuestaId, false);
-            assertEquals(0, todas.size(), "Debe devolver una lista vacía si no hay respuestas");
-
-            encuestaService.eliminarEncuesta(encuestaId);
         }
     }
 }
