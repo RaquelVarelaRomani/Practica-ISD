@@ -183,6 +183,13 @@ public class EncuestaServiceTest {
         }
     }
 
+    @Test
+    public void testBuscarEncuestaPorIdInexistente() {
+        assertThrows(InstanceNotFoundException.class,
+                () -> encuestaService.buscarEncuestaPorId(-12345L),
+                "Debe lanzar InstanceNotFoundException al buscar una encuesta inexistente");
+    }
+
 
 
     @Test
