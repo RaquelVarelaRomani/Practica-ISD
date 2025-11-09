@@ -23,12 +23,10 @@ public class EncuestaServiceImpl implements EncuestaService {
 
     private final DataSource dataSource;
     private SqlEncuestaDao encuestaDao = SqlEncuestaDaoFactory.getDao();
-    //private SqlRespuestaDao respuestaDao = SqlRespuestaDaoFactory.getDao();
 
     public EncuestaServiceImpl() {
         dataSource = DataSourceLocator.getDataSource(APP_DATA_SOURCE);
         encuestaDao = SqlEncuestaDaoFactory.getDao();
-        //respuestaDao = SqlRespuestaDaoFactory.getDao();
     }
 
     private void validateEncuesta(Encuesta encuesta) throws InputValidationException {

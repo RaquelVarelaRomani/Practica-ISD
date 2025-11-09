@@ -27,7 +27,6 @@ public class EncuestaServiceTest {
     private static EncuestaService encuestaService = null;
     private static SqlEncuestaDao encuestaDao = null;
 
-    //private static EncuestaService encuestaService = null;
 
     @BeforeAll
     public static void init() {
@@ -86,7 +85,14 @@ public class EncuestaServiceTest {
             Encuesta encuesta = new Encuesta("¿Cuál es tu nombre?", LocalDateTime.now());
             createEncuesta(encuesta);
         }, "Debe lanzar InputValidationException por fecha actual");
+
+        // Caso 5: fecha fin nula
+        assertThrows(InputValidationException.class, () -> {
+            Encuesta encuesta = new Encuesta("¿Te gusta programar?", null);
+            createEncuesta(encuesta);
+        }, "Debe lanzar InputValidationException cuando la fecha de fin es nula");
     }
+
 
     @Test
     public void testCrearBuscarEncuesta() throws InputValidationException, InstanceNotFoundException {
@@ -176,6 +182,18 @@ public class EncuestaServiceTest {
             }
         }
     }
+
+    @Test
+    public void testFindByIdThrowsInstanceNotFoundException() throws Exception {
+        try (var connection = DataSourceLocator.getDataSource(APP_DATA_SOURCE).getConnection()) {
+            assertThrows(InstanceNotFoundException.class,
+                    () -> encuestaDao.findById(connection, -999L),
+                    "Debe lanzar InstanceNotFoundException al no encontrar encuesta");
+        }
+    }
+
+
+
     @Test
     public void testCancelarEncuestaValida() throws Exception {
         Encuesta encuesta = getValidEncuesta();
@@ -188,6 +206,107 @@ public class EncuestaServiceTest {
 
         assertThrows(EncuestaCanceladaException.class,
                 () -> encuestaService.cancelarEncuesta(creada.getEncuestaId()));
+    }
+
+    @Test
+    public void testCancelarEncuestaFinalizada() throws Exception {
+        Encuesta encuestaFinalizada = new Encuesta("¿Encuesta ya finalizada?", LocalDateTime.now().minusDays(1));
+        encuestaFinalizada.setFechaCreacion(LocalDateTime.now().minusDays(2)); // 💡 Añadimos fechaCreacion manualmente
+
+        try (var connection = DataSourceLocator.getDataSource(APP_DATA_SOURCE).getConnection()) {
+            connection.setAutoCommit(false);
+            Encuesta creada = encuestaDao.create(connection, encuestaFinalizada);
+            connection.commit();
+
+            assertThrows(EncuestaFinalizadaException.class,
+                    () -> encuestaService.cancelarEncuesta(creada.getEncuestaId()),
+                    "Debe lanzar EncuestaFinalizadaException al intentar cancelar una encuesta finalizada");
+        }
+    }
+
+
+    @Test
+    public void testCancelarEncuestaInexistenteDebeLanzarExcepcion() {
+        Long idInexistente = -999L;
+
+        assertThrows(InstanceNotFoundException.class,
+                () -> encuestaService.cancelarEncuesta(idInexistente),
+                "Debe lanzar InstanceNotFoundException al intentar cancelar una encuesta inexistente");
+    }
+
+
+    @Test
+    public void testEncuestaSettersAndGetters() {
+        LocalDateTime now = LocalDateTime.now().withNano(0);
+        LocalDateTime fin = now.plusDays(5);
+
+        Encuesta e = new Encuesta("Pregunta inicial", fin);
+        e.setEncuestaId(10L);
+        e.setPregunta("¿Te gusta Java?");
+        e.setFechaCreacion(now);
+        e.setFechaFin(fin.plusDays(1));
+        e.setCancelada(true);
+
+        assertEquals(10L, e.getEncuestaId());
+        assertEquals("¿Te gusta Java?", e.getPregunta());
+        assertEquals(now, e.getFechaCreacion());
+        assertEquals(fin.plusDays(1), e.getFechaFin());
+        assertTrue(e.isCancelada());
+    }
+
+    @Test
+    public void testEncuestaRespuestasList() {
+        Encuesta e = new Encuesta("¿Te gusta programar?", LocalDateTime.now().plusDays(1));
+        assertNull(e.getRespuestas(), "Por defecto, la lista de respuestas debe ser null");
+
+        var respuestas = java.util.List.of(
+                new es.udc.ws.app.model.respuesta.Respuesta(1L, 1L, "test@test.com", true, LocalDateTime.now())
+        );
+        e.setRespuestas(respuestas);
+        assertEquals(1, e.getRespuestas().size());
+    }
+
+    @Test
+    public void testEncuestaToStringContainsFields() {
+        Encuesta e = new Encuesta(5L, "¿Te gusta programar?", LocalDateTime.now(), LocalDateTime.now().plusDays(1), false);
+        String text = e.toString();
+        assertTrue(text.contains("encuestaId=5"));
+        assertTrue(text.contains("pregunta='¿Te gusta programar?'"));
+    }
+
+    @Test
+    public void testEncuestaEqualsAndHashCode() {
+        LocalDateTime now = LocalDateTime.now().withNano(0);
+        LocalDateTime fin = now.plusDays(3);
+
+        Encuesta e1 = new Encuesta(1L, "P1", now, fin, false);
+        Encuesta e2 = new Encuesta(1L, "P1", now, fin, false);
+        Encuesta e3 = new Encuesta(2L, "P2", now, fin, true);
+
+        assertEquals(e1, e2, "Dos encuestas con mismos valores deben ser iguales");
+        assertEquals(e1.hashCode(), e2.hashCode(), "hashCode debe coincidir para objetos iguales");
+        assertNotEquals(e1, e3, "Encuestas diferentes no deben ser iguales");
+        assertNotEquals(e1, null);
+        assertNotEquals(e1, "string");
+    }
+
+    @Test
+    public void testRemoveThrowsInstanceNotFoundException() throws Exception {
+        try (var connection = DataSourceLocator.getDataSource(APP_DATA_SOURCE).getConnection()) {
+            assertThrows(InstanceNotFoundException.class,
+                    () -> encuestaDao.remove(connection, -999L),
+                    "Debe lanzar InstanceNotFoundException al eliminar una encuesta inexistente");
+        }
+    }
+
+    @Test
+    public void testUpdateThrowsInstanceNotFoundException() throws Exception {
+        try (var connection = DataSourceLocator.getDataSource(APP_DATA_SOURCE).getConnection()) {
+            Encuesta encuesta = new Encuesta(-999L, "No existe", LocalDateTime.now(), LocalDateTime.now().plusDays(1), false);
+            assertThrows(InstanceNotFoundException.class,
+                    () -> encuestaDao.update(connection, encuesta),
+                    "Debe lanzar InstanceNotFoundException al actualizar una encuesta inexistente");
+        }
     }
 
 }
