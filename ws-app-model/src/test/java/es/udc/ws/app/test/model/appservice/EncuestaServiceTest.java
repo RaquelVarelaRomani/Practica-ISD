@@ -50,15 +50,6 @@ public class EncuestaServiceTest {
         return encuestaService.crearEncuesta(encuesta);
     }
 
-    private void removeEncuesta(Long encuestaId) {
-
-        try {
-            System.out.println("Simulando borrado de encuesta con id: " + encuestaId);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     @Test
     public void testCrearEncuestaInvalida() {
 
@@ -163,7 +154,7 @@ public class EncuestaServiceTest {
 
             // Buscar por palabra clave "favorito"
             resultados = encuestaService.buscarEncuestasPorPalabraClave("favorito", false);
-            assertEquals(2, resultados.size(), "Debe encontrar tres encuestas con la palabra 'favorito'");
+            assertEquals(2, resultados.size(), "Debe encontrar dos encuestas con la palabra 'favorito'");
 
             // Buscar por palabra clave que no existe
             resultados = encuestaService.buscarEncuestasPorPalabraClave("inexistente", false);
@@ -206,6 +197,7 @@ public class EncuestaServiceTest {
 
         assertThrows(EncuestaCanceladaException.class,
                 () -> encuestaService.cancelarEncuesta(creada.getEncuestaId()));
+        encuestaService.eliminarEncuesta(creada.getEncuestaId());
     }
 
     @Test

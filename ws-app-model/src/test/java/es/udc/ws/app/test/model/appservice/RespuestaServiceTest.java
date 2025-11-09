@@ -68,6 +68,7 @@ public class RespuestaServiceTest {
                             ),
                     "No debe lanzar excepción al responder una encuesta válida"
             );
+            encuestaService.eliminarEncuesta(encuesta.getEncuestaId());
         }
     }
 
@@ -209,6 +210,7 @@ public class RespuestaServiceTest {
                             ),
                     "Debe lanzar EncuestaCanceladaException al responder una encuesta cancelada"
             );
+            encuestaService.eliminarEncuesta(encuesta.getEncuestaId());
         }
     }
 
