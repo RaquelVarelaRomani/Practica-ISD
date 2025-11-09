@@ -2,3 +2,13 @@
 Commit 62f0e19
     - Mensaje antiguo: Añadidos DAOs, EncuestaService y Añadido test de buscar
     - Mensaje nuevo: [FUNC-1] [FUNC-2] Añadidas implementaciones de ambas funcionalidades en el DAO, Service y Test
+
+Commit 89e339a
+    - Mensaje antiguo: Implementadas entidades Encuesta y Respuesta
+        + Script MySQLCreateTables.sql añadido para la creación de tablas
+        + Servicio EncuestaServiceImpl con validaciones para creacion de encuesta
+        + Test EncuestaServiceTest implementado y verificado(BUILD SUCCESS) para la creación de encuestas inválidas
+    - Mensaje nuevo: [VARIOS] Añadidas e implementadas entidades Encuesta y Respuesta +
+        añadido script MySQLCreateTables para la creación de tablas +
+        añadido e implementado service EncuestaServiceImpl con validaciones para creación de encuestas +
+        añadido e implementado EncuestaServiceTest y verificado (BUILD SUCCESS) para la creación de encuestas válidas e inválidas.
