@@ -6,6 +6,11 @@ import es.udc.ws.app.model.respuesta.Respuesta;
 
 public class Encuesta {
 
+    // TODO:
+    //      1. Atributos de contadores para respuestas positivas y negativas
+    //      2. El atributo List<Respuesta> "No se persiste (ok) perpo no es una aproximación adecuada"
+
+
     private Long encuestaId;
     private String pregunta;
     private LocalDateTime fechaCreacion;

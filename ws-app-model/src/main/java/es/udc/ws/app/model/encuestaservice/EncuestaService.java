@@ -9,6 +9,8 @@ import es.udc.ws.util.exceptions.InstanceNotFoundException;
 import es.udc.ws.util.exceptions.InputValidationException;
 
 public interface EncuestaService {
+
+    // TODO: EncuestaService.eliminarEncuesta no es un caso de uso por lo que no debería de aparecer en la interfaz del servicio del modelo.
     
     //Funcionalidad 1: Crear encuesta
     public Encuesta crearEncuesta(Encuesta encuesta) throws InputValidationException;

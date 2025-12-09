@@ -11,6 +11,8 @@ import java.util.List;
 
 public interface RespuestaService {
 
+    // TODO: RespuestaService.responderEncuesta debería de devolver la instancia de la respuesta creada o al menos su identificador (Long).
+
     void responderEncuesta(Long encuestaId, String emailEmpleado, boolean respuestaPositiva)
             throws InstanceNotFoundException, InputValidationException,
             EncuestaCanceladaException, EncuestaFinalizadaException;

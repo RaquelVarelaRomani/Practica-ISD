@@ -14,6 +14,8 @@ public interface SqlEncuestaDao {
 
     public void  update(Connection connection, Encuesta encuesta) throws InstanceNotFoundException;
 
+    // TODO: declara InstanceNotFoundException aunque nunca la devuelve en la implementación
+    //       Es correcto que no la devuelva, pero no debería declarar que la lanza en la interfaz.
     public List<Encuesta> findByKeyword(Connection connection, String keyword, boolean soloActivas) throws InstanceNotFoundException;
 
 }

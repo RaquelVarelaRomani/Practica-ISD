@@ -6,6 +6,10 @@ import java.util.List;
 
 public class Jdbc3CcSqlRespuestaDao extends AbstractSqlRespuestaDao {
 
+
+    // TODO:
+    //     1. Sólo debería de tener el method create, que es el único que depende de aspectos específicos de una familia de base de datos concreta (con soporte de columnas contador).
+
     @Override
     public Respuesta create(Connection connection, Respuesta respuesta) {
         String queryString = "INSERT INTO Respuesta (encuestaId, emailUsuario, respuestaPositiva, fechaRespuesta) " +

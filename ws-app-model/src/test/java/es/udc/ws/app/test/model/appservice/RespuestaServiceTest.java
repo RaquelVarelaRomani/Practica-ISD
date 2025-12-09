@@ -28,6 +28,14 @@ import org.junit.jupiter.api.Test;
 
 public class RespuestaServiceTest {
 
+    /*   TODO:
+    *       1. RespuestaServiceTest no borra nunca las respuestas creadas como parte de las pruebas.
+    *       2. RespuestaServiceTest En casi todos los métodos de pruebas obtienen de forma explícita la conexión.
+    *       3. RespuestaServiceTest no comprueban en ningún caso el número de respuestas positivas / negativas de una encuesta.
+    *       4. RespuestaServiceTest.testResponderEncuestaValida no comprueba que la respuesta ha sido creada.
+    *          - En testModificarRespuestaExistente sí se comprueba algún atributo de la respuesta, pero no todos.
+    * */
+
     private static RespuestaService respuestaService = null;
     private static SqlEncuestaDao encuestaDao = null;
     private static EncuestaService encuestaService = null;
