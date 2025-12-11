@@ -9,6 +9,7 @@ import javax.sql.DataSource;
 
 import es.udc.ws.app.model.encuestaservice.EncuestaServiceFactory;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import es.udc.ws.app.model.encuesta.Encuesta;
@@ -49,6 +50,23 @@ public class EncuestaServiceTest {
     private Encuesta createEncuesta(Encuesta encuesta) throws InputValidationException {
         return encuestaService.crearEncuesta(encuesta);
     }
+
+    @BeforeEach
+    public void limpiarBaseDeDatos() {
+        try (var connection = DataSourceLocator.getDataSource(APP_DATA_SOURCE).getConnection()) {
+            connection.setAutoCommit(true);
+
+            // Primero eliminar las respuestas (porque dependen de encuesta)
+            connection.createStatement().executeUpdate("DELETE FROM Respuesta");
+
+            // Luego eliminar las encuestas
+            connection.createStatement().executeUpdate("DELETE FROM Encuesta");
+
+        } catch (Exception e) {
+            throw new RuntimeException("Error limpiando BD para tests", e);
+        }
+    }
+
 
     @Test
     public void testCrearEncuestaInvalida() {

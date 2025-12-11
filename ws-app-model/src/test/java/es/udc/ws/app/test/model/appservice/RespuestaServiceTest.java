@@ -21,6 +21,7 @@ import es.udc.ws.util.sql.DataSourceLocator;
 import es.udc.ws.util.sql.SimpleDataSource;
 
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class RespuestaServiceTest {
@@ -35,6 +36,23 @@ public class RespuestaServiceTest {
         respuestaService = RespuestaServiceFactory.getService();
         encuestaService = EncuestaServiceFactory.getService();
     }
+
+    @BeforeEach
+    public void limpiarBaseDeDatos() {
+        try (var connection = DataSourceLocator.getDataSource(APP_DATA_SOURCE).getConnection()) {
+            connection.setAutoCommit(true);
+
+            // Primero eliminar las respuestas (porque dependen de encuesta)
+            connection.createStatement().executeUpdate("DELETE FROM Respuesta");
+
+            // Luego eliminar las encuestas
+            connection.createStatement().executeUpdate("DELETE FROM Encuesta");
+
+        } catch (Exception e) {
+            throw new RuntimeException("Error limpiando BD para tests", e);
+        }
+    }
+
 
     // ------------------------
     // MÉTODO AUXILIAR
