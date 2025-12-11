@@ -2,6 +2,8 @@ package es.udc.ws.app.model.respuesta;
 
 import es.udc.ws.util.exceptions.InstanceNotFoundException;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public abstract class AbstractSqlRespuestaDao implements SqlRespuestaDao {
@@ -69,4 +71,54 @@ public abstract class AbstractSqlRespuestaDao implements SqlRespuestaDao {
             throw new RuntimeException(e);
         }
     }
+
+    @Override
+    public List<Respuesta> findByEncuesta(Connection connection, Long encuestaId, boolean soloPositivas) {
+        String base =
+                "SELECT respuestaId, encuestaId, emailUsuario, respuestaPositiva, fechaRespuesta " +
+                        "FROM Respuesta WHERE encuestaId = ? ";
+
+        if (soloPositivas) base += "AND respuestaPositiva = TRUE ";
+
+        base += "ORDER BY fechaRespuesta";
+
+        try (PreparedStatement ps = connection.prepareStatement(base)) {
+            ps.setLong(1, encuestaId);
+            ResultSet resultSet = ps.executeQuery();
+            List<Respuesta> respuestas = new ArrayList<>();
+
+            while (resultSet.next()) {
+                respuestas.add(new Respuesta(
+                        resultSet.getLong(1),
+                        resultSet.getLong(2),
+                        resultSet.getString(3),
+                        resultSet.getBoolean(4),
+                        resultSet.getTimestamp(5).toLocalDateTime()
+                ));
+            }
+            return respuestas;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void remove(Connection connection, Long respuestaId)
+            throws InstanceNotFoundException {
+
+        String query = "DELETE FROM Respuesta WHERE respuestaId = ?";
+
+        try (PreparedStatement ps = connection.prepareStatement(query)) {
+
+            ps.setLong(1, respuestaId);
+
+            int removed = ps.executeUpdate();
+
+            if (removed == 0) throw new InstanceNotFoundException(respuestaId, Respuesta.class.getName());
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 }

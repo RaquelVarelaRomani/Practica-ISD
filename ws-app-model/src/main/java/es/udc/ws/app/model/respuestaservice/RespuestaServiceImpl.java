@@ -50,7 +50,7 @@ public class RespuestaServiceImpl implements RespuestaService {
     // --------------------------------------------------------------
 
     @Override
-    public void responderEncuesta(Long encuestaId, String emailEmpleado, boolean respuestaPositiva)
+    public Respuesta responderEncuesta(Long encuestaId, String emailEmpleado, boolean respuestaPositiva)
             throws InstanceNotFoundException, InputValidationException,
             EncuestaCanceladaException, EncuestaFinalizadaException {
 
@@ -74,21 +74,24 @@ public class RespuestaServiceImpl implements RespuestaService {
                     throw new EncuestaFinalizadaException(encuestaId);
                 }
 
+                Respuesta respuesta;
+
                 // Intentar recuperar respuesta existente
                 try {
-                    Respuesta existente = respuestaDao.findByEncuestaAndEmail(connection, encuestaId, emailEmpleado);
-                    existente.setRespuestaPositiva(respuestaPositiva);
-                    existente.setFechaRespuesta(LocalDateTime.now().withNano(0));
-                    respuestaDao.update(connection, existente);
+                    respuesta = respuestaDao.findByEncuestaAndEmail(connection, encuestaId, emailEmpleado);
+                    respuesta.setRespuestaPositiva(respuestaPositiva);
+                    respuesta.setFechaRespuesta(LocalDateTime.now().withNano(0));
+                    respuestaDao.update(connection, respuesta);
 
                 } catch (InstanceNotFoundException e) {
                     // Si no existe, crear nueva
-                    Respuesta nueva = new Respuesta(encuestaId, emailEmpleado, respuestaPositiva);
-                    nueva.setFechaRespuesta(LocalDateTime.now().withNano(0));
-                    respuestaDao.create(connection, nueva);
+                    respuesta = new Respuesta(encuestaId, emailEmpleado, respuestaPositiva);
+                    respuesta.setFechaRespuesta(LocalDateTime.now().withNano(0));
+                    respuesta = respuestaDao.create(connection, respuesta);
                 }
 
                 connection.commit();
+                return respuesta;
 
             } catch (InstanceNotFoundException | EncuestaCanceladaException | EncuestaFinalizadaException e) {
                 connection.commit();
