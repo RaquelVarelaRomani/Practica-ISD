@@ -86,7 +86,7 @@ public class EncuestaServiceTest {
 
 
     @Test
-    public void testCrearBuscarEncuesta() throws InputValidationException, InstanceNotFoundException {
+    public void testCrearBuscarEncuesta() throws InputValidationException, InstanceNotFoundException, EncuestaFinalizadaException, EncuestaCanceladaException {
         Encuesta encuesta = getValidEncuesta();
         Encuesta encuestaCreada = null;
 
@@ -119,20 +119,14 @@ public class EncuestaServiceTest {
             assertEquals(encuestaCreada.getFechaCreacion().withNano(0).withSecond(0),
                     encuestaEncontrada.getFechaCreacion().withNano(0).withSecond(0),
                     "Las fechas de creación deben coincidir");
-
-
-
         } finally {
-
-             if (encuestaCreada != null) {
-                 encuestaService.eliminarEncuesta(encuestaCreada.getEncuestaId());
-             }
+            if(encuestaCreada != null) encuestaService.cancelarEncuesta(encuestaCreada.getEncuestaId());
         }
     }
 
     // Buscar encuesta por palabra clave
     @Test
-    public void testBuscarEncuestasPorPalabraClave() throws InputValidationException, InstanceNotFoundException {
+    public void testBuscarEncuestasPorPalabraClave() throws InputValidationException, InstanceNotFoundException, EncuestaFinalizadaException, EncuestaCanceladaException {
         Encuesta encuesta1 = getValidEncuesta("¿Cuál es tu color favorito?");
         Encuesta encuesta2 = getValidEncuesta("¿Cuál es tu comida favorita?");
         Encuesta encuesta3 = getValidEncuesta("¿Cuál es tu deporte favorito?");
@@ -161,16 +155,9 @@ public class EncuestaServiceTest {
             assertEquals(0, resultados.size(), "No debe encontrar encuestas con la palabra 'inexistente'");
 
         } finally {
-            // Limpieza
-            if (creada1 != null) {
-                encuestaService.eliminarEncuesta(creada1.getEncuestaId());
-            }
-            if (creada2 != null) {
-                encuestaService.eliminarEncuesta(creada2.getEncuestaId());
-            }
-            if (creada3 != null) {
-                encuestaService.eliminarEncuesta(creada3.getEncuestaId());
-            }
+            if (creada1 != null) encuestaService.cancelarEncuesta(creada1.getEncuestaId());
+            if (creada2 != null) encuestaService.cancelarEncuesta(creada2.getEncuestaId());
+            if (creada3 != null) encuestaService.cancelarEncuesta(creada3.getEncuestaId());
         }
     }
 
@@ -204,7 +191,6 @@ public class EncuestaServiceTest {
 
         assertThrows(EncuestaCanceladaException.class,
                 () -> encuestaService.cancelarEncuesta(creada.getEncuestaId()));
-        encuestaService.eliminarEncuesta(creada.getEncuestaId());
     }
 
     @Test
@@ -254,15 +240,12 @@ public class EncuestaServiceTest {
     }
 
     @Test
-    public void testEncuestaRespuestasList() {
-        Encuesta e = new Encuesta("¿Te gusta programar?", LocalDateTime.now().plusDays(1));
-        assertNull(e.getRespuestas(), "Por defecto, la lista de respuestas debe ser null");
+    public void testEncuestaNumPositivasNegativas() {
+        LocalDateTime now = LocalDateTime.now().withNano(0);
+        Encuesta e = new Encuesta(1L, "P", now, now.plusDays(1), false, 2, 3);
 
-        var respuestas = java.util.List.of(
-                new es.udc.ws.app.model.respuesta.Respuesta(1L, 1L, "test@test.com", true, LocalDateTime.now())
-        );
-        e.setRespuestas(respuestas);
-        assertEquals(1, e.getRespuestas().size());
+        assertEquals(2, e.getNumPositivas());
+        assertEquals(3, e.getNumNegativas());
     }
 
     @Test

@@ -1,22 +1,16 @@
 package es.udc.ws.app.model.encuesta;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import es.udc.ws.app.model.respuesta.Respuesta;
 
 public class Encuesta {
-
-    // TODO:
-    //      1. Atributos de contadores para respuestas positivas y negativas
-    //      2. El atributo List<Respuesta> "No se persiste (ok) perpo no es una aproximación adecuada"
-
 
     private Long encuestaId;
     private String pregunta;
     private LocalDateTime fechaCreacion;
     private LocalDateTime fechaFin;
     private boolean cancelada;
-    private List<Respuesta> respuestas;
+    private int numPositivas;
+    private int numNegativas;
 
     //Constructor para crear nuevas encuestas sin ID ni fecha de creación
     public Encuesta(String pregunta, LocalDateTime fechaFin) {
@@ -36,6 +30,15 @@ public class Encuesta {
     public Encuesta(Long encuestaId, String pregunta, LocalDateTime fechaCreacion, LocalDateTime fechaFin, boolean cancelada) {
         this(encuestaId, pregunta, fechaFin, cancelada);
         this.fechaCreacion = (fechaCreacion != null) ? fechaCreacion.withNano(0) : null;
+    }
+
+    // Constructor extendido con contadores
+    public Encuesta(Long encuestaId, String pregunta, LocalDateTime fechaCreacion,
+                    LocalDateTime fechaFin, boolean cancelada,
+                    int numPositivas, int numNegativas) {
+        this(encuestaId, pregunta, fechaCreacion, fechaFin, cancelada);
+        this.numPositivas = numPositivas;
+        this.numNegativas = numNegativas;
     }
 
     //Getters y setters
@@ -79,12 +82,20 @@ public class Encuesta {
         this.cancelada = cancelada;
     }
 
-    public List<Respuesta> getRespuestas() {
-        return respuestas;
+    public int getNumPositivas(){
+        return  numPositivas;
     }
 
-    public void setRespuestas(List<Respuesta> respuestas) {
-        this.respuestas = respuestas;
+    public void setNumPositivas(int numPositivas) {
+        this.numPositivas = numPositivas;
+    }
+
+    public int getNumNegativas() {
+        return numNegativas;
+    }
+
+    public void setNumNegativas(int numNegativas) {
+        this.numNegativas = numNegativas;
     }
 
     @Override
@@ -95,7 +106,8 @@ public class Encuesta {
                 ", fechaCreacion=" + fechaCreacion +
                 ", fechaFin=" + fechaFin +
                 ", cancelada=" + cancelada +
-                ", respuestas=" + (respuestas != null ? respuestas.size() : "null") +
+                ", numPositivas=" + numPositivas +
+                ", numNegativas=" + numNegativas +
                 '}';
     }
 
@@ -108,6 +120,8 @@ public class Encuesta {
         result = prime * result + ((fechaCreacion == null) ? 0 : fechaCreacion.hashCode());
         result = prime * result + ((fechaFin == null) ? 0 : fechaFin.hashCode());
         result = prime * result + (cancelada ? 1231 : 1237);
+        result = prime * result + numPositivas;
+        result = prime * result + numNegativas;
         return result;
     }
 
@@ -138,7 +152,13 @@ public class Encuesta {
                 return false;
         } else if (!fechaFin.equals(other.fechaFin))
             return false;
-        return cancelada == other.cancelada;
+        if (cancelada != other.cancelada)
+            return false;
+        if (numPositivas != other.numPositivas)
+            return false;
+        if (numNegativas != other.numNegativas)
+            return false;
+        return true;
     }
 
 

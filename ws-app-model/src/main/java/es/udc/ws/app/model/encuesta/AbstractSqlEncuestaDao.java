@@ -19,8 +19,14 @@ public abstract class AbstractSqlEncuestaDao implements SqlEncuestaDao {
     public Encuesta findById(Connection connection, Long encuestaId)
             throws InstanceNotFoundException {
 
-        String queryString = "SELECT pregunta, fechaCreacion, fechaFin, cancelada "
-                + "FROM Encuesta WHERE encuestaId = ?";
+        String queryString =
+                "SELECT e.pregunta, e.fechaCreacion, e.fechaFin, e.cancelada, " +
+                "COUNT(CASE WHEN r.respuestaPositiva = TRUE THEN 1 END) AS numPositivas, " +
+                "COUNT(CASE WHEN r.respuestaPositiva = FALSE THEN 1 END) AS numNegativas " +
+                "FROM Encuesta e " +
+                "LEFT JOIN Respuesta r ON e.encuestaId = r.encuestaId " +
+                "WHERE e.encuestaId = ? " +
+                "GROUP BY e.pregunta, e.fechaCreacion, e.fechaFin, e.cancelada";
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(queryString)) {
 
@@ -31,12 +37,15 @@ public abstract class AbstractSqlEncuestaDao implements SqlEncuestaDao {
                 throw new InstanceNotFoundException(encuestaId, Encuesta.class.getName());
             }
 
-            String pregunta = resultSet.getString(1);
-            LocalDateTime fechaCreacion = resultSet.getTimestamp(2).toLocalDateTime();
-            LocalDateTime fechaFin = resultSet.getTimestamp(3).toLocalDateTime();
-            boolean cancelada = resultSet.getBoolean(4);
+            int i = 1;
+            String pregunta = resultSet.getString(i++);
+            LocalDateTime fechaCreacion = resultSet.getTimestamp(i++).toLocalDateTime();
+            LocalDateTime fechaFin = resultSet.getTimestamp(i++).toLocalDateTime();
+            boolean cancelada = resultSet.getBoolean(i++);
+            int numPositivas = resultSet.getInt(i++);
+            int numNegativas = resultSet.getInt(i++);
 
-            return new Encuesta(encuestaId, pregunta, fechaCreacion, fechaFin, cancelada);
+            return new Encuesta(encuestaId, pregunta, fechaCreacion, fechaFin, cancelada, numPositivas, numNegativas);
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -44,8 +53,7 @@ public abstract class AbstractSqlEncuestaDao implements SqlEncuestaDao {
     }
 
     @Override
-    public List<Encuesta> findByKeyword(Connection connection, String keyword, boolean soloActivas)
-            throws InstanceNotFoundException {
+    public List<Encuesta> findByKeyword(Connection connection, String keyword, boolean soloActivas) {
 
         String queryString =
                 "SELECT e.encuestaId, e.pregunta, e.fechaCreacion, e.fechaFin, e.cancelada, " +
@@ -79,8 +87,7 @@ public abstract class AbstractSqlEncuestaDao implements SqlEncuestaDao {
                 int numPositivas = resultSet.getInt(i++);
                 int numNegativas = resultSet.getInt(i++);
 
-                // Constructor estándar (los contadores se gestionan en la capa de servicio)
-                Encuesta encuesta = new Encuesta(encuestaId, pregunta, fechaCreacion, fechaFin, cancelada);
+                Encuesta encuesta = new Encuesta(encuestaId, pregunta, fechaCreacion, fechaFin, cancelada, numPositivas, numNegativas);
                 encuestas.add(encuesta);
             }
 

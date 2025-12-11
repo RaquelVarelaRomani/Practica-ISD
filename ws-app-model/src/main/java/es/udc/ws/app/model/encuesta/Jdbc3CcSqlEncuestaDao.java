@@ -33,7 +33,9 @@ public class Jdbc3CcSqlEncuestaDao extends AbstractSqlEncuestaDao {
                     encuesta.getPregunta(),
                     encuesta.getFechaCreacion(),
                     encuesta.getFechaFin(),
-                    encuesta.isCancelada());
+                    encuesta.isCancelada(),
+                    0,
+                    0);
 
         } catch (SQLException e) {
             throw new RuntimeException(e);

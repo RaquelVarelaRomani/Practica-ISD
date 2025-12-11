@@ -46,13 +46,13 @@ public class EncuestaServiceImpl implements EncuestaService {
     public Encuesta crearEncuesta(Encuesta encuesta) throws InputValidationException {
         
         validateEncuesta(encuesta);
-        encuesta.setFechaCreacion(LocalDateTime.now().withNano(0));
 
         try (Connection connection = dataSource.getConnection()) {
             connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
             connection.setAutoCommit(false);
 
             try {
+                encuesta.setFechaCreacion(LocalDateTime.now().withNano(0));
                 Encuesta encuestaCreada = encuestaDao.create(connection, encuesta);
                 connection.commit();
                 return encuestaCreada;
@@ -88,55 +88,40 @@ public class EncuestaServiceImpl implements EncuestaService {
         try (Connection connection = dataSource.getConnection()) {
             return encuestaDao.findByKeyword(connection, keyword, soloActivas);
 
-        } catch (SQLException | InstanceNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-
-    @Override
-    public void eliminarEncuesta(Long encuestaId) throws InstanceNotFoundException {
-
-        try (Connection connection = dataSource.getConnection()) {
-
-            connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
-            connection.setAutoCommit(false);
-
-            try {
-                encuestaDao.remove(connection, encuestaId);
-                connection.commit();
-
-            } catch (InstanceNotFoundException e) {
-                connection.commit();
-                throw e;
-
-            } catch (SQLException e) {
-                connection.rollback();
-                throw new RuntimeException("Error SQL al eliminar encuesta", e);
-
-            } catch (RuntimeException | Error e) {
-                connection.rollback();
-                throw e;
-
-            }
-
         } catch (SQLException e) {
-            throw new RuntimeException("Error al acceder a la base de datos", e);
+            throw new RuntimeException("Error al buscar encuestas por palabra clave", e);
         }
     }
 
     @Override
     public void cancelarEncuesta(Long encuestaId) throws InstanceNotFoundException, EncuestaFinalizadaException, EncuestaCanceladaException {
         try (Connection connection = dataSource.getConnection()) {
-            Encuesta encuesta = encuestaDao.findById(connection, encuestaId);
-            if(encuesta.isCancelada()) {
-                throw new EncuestaCanceladaException(encuestaId);
+            connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
+            connection.setAutoCommit(false);
+            try{
+                Encuesta encuesta = encuestaDao.findById(connection, encuestaId);
+                if(encuesta.isCancelada()) {
+                    connection.commit();
+                    throw new EncuestaCanceladaException(encuestaId);
+                }
+                if(!encuesta.getFechaFin().isAfter(LocalDateTime.now())) {
+                    connection.commit();
+                    throw new EncuestaFinalizadaException(encuestaId);
+                }
+                encuesta.setCancelada(true);
+                encuestaDao.update(connection, encuesta);
+                connection.commit();
+            } catch (InstanceNotFoundException | EncuestaFinalizadaException | EncuestaCanceladaException e) {
+                connection.commit();
+                throw e;
+            } catch (SQLException e) {
+                connection.rollback();
+                throw new RuntimeException("Error SQL al cancelar la encuesta", e);
+
+            } catch (RuntimeException | Error e) {
+                connection.rollback();
+                throw e;
             }
-            if(LocalDateTime.now().isAfter(encuesta.getFechaFin())) {
-                throw new EncuestaFinalizadaException(encuestaId);
-            }
-            encuesta.setCancelada(true);
-            encuestaDao.update(connection, encuesta);
 
         } catch (SQLException e) {
             throw new RuntimeException("Error al acceder a la base de datos", e);
