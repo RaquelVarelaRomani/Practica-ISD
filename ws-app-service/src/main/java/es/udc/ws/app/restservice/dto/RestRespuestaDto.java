@@ -6,7 +6,7 @@ public class RestRespuestaDto {
 
     private Long respuestaId;
     private Long encuestaId;
-    private String emailEmpleado;
+    private String emailUsuario;
     private boolean respuestaPositiva;
     private String fechaRespuesta;
 
@@ -17,7 +17,7 @@ public class RestRespuestaDto {
                             boolean respuestaPositiva, String fechaRespuesta) {
         this.respuestaId = respuestaId;
         this.encuestaId = encuestaId;
-        this.emailEmpleado = emailUsuario;
+        this.emailUsuario = emailUsuario;
         this.respuestaPositiva = respuestaPositiva;
         this.fechaRespuesta = fechaRespuesta;
     }
@@ -38,12 +38,12 @@ public class RestRespuestaDto {
         this.encuestaId = encuestaId;
     }
 
-    public String getEmailEmpleado() {
-        return emailEmpleado;
+    public String getEmailUsuario() {
+        return emailUsuario;
     }
 
-    public void setEmailEmpleado(String emailEmpleado) {
-        this.emailEmpleado = emailEmpleado;
+    public void setEmailUsuario(String emailUsuario) {
+        this.emailUsuario = emailUsuario;
     }
 
     public boolean isRespuestaPositiva() {
@@ -67,7 +67,7 @@ public class RestRespuestaDto {
         return "RestRespuestaDto{" +
                 "respuestaId=" + respuestaId +
                 ", encuestaId=" + encuestaId +
-                ", emailEmpleado='" + emailEmpleado + '\'' +
+                ", emailUsuario='" + emailUsuario + '\'' +
                 ", respuestaPositiva=" + respuestaPositiva +
                 '}';
     }

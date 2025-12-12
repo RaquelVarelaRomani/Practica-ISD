@@ -6,7 +6,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class EncuestaDtoConversor {
+public class EncuestaToRestEncuestaDtoConversor {
 
     private static final DateTimeFormatter FORMATTER =
             DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
@@ -45,7 +45,7 @@ public class EncuestaDtoConversor {
 
     public static List<RestEncuestaDto> toRestEncuestaDtos(List<Encuesta> encuestas) {
         return encuestas.stream()
-                .map(EncuestaDtoConversor::toRestEncuestaDto)
+                .map(EncuestaToRestEncuestaDtoConversor::toRestEncuestaDto)
                 .collect(Collectors.toList());
     }
 }

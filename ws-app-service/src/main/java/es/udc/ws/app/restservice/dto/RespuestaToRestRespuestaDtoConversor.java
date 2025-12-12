@@ -7,7 +7,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class RespuestaDtoConversor {
+public class RespuestaToRestRespuestaDtoConversor {
 
     private static final DateTimeFormatter FORMATTER =
             DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
@@ -28,7 +28,7 @@ public class RespuestaDtoConversor {
         return new Respuesta(
                 dto.getRespuestaId(),
                 dto.getEncuestaId(),
-                dto.getEmailEmpleado(),
+                dto.getEmailUsuario(),
                 dto.isRespuestaPositiva(),
                 dto.getFechaRespuesta() != null
                         ? LocalDateTime.parse(dto.getFechaRespuesta(), FORMATTER)
@@ -38,7 +38,7 @@ public class RespuestaDtoConversor {
 
     public static List<RestRespuestaDto> toRestRespuestaDtos(List<Respuesta> respuestas) {
         return respuestas.stream()
-                .map(RespuestaDtoConversor::toRestRespuestaDto)
+                .map(RespuestaToRestRespuestaDtoConversor::toRestRespuestaDto)
                 .collect(Collectors.toList());
     }
 }
