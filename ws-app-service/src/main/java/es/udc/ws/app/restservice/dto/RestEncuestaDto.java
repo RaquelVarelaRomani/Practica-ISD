@@ -4,7 +4,6 @@ public class RestEncuestaDto {
 
     private Long encuestaId;
     private String pregunta;
-    private String fechaCreacion;
     private String fechaFin;
     private boolean cancelada;
     private int numPositivas;
@@ -13,12 +12,11 @@ public class RestEncuestaDto {
 
     public RestEncuestaDto() {}
 
-    public RestEncuestaDto(Long encuestaId, String pregunta, String fechaCreacion,
+    public RestEncuestaDto(Long encuestaId, String pregunta,
                           String fechaFin, boolean cancelada,
                           int numPositivas, int numNegativas) {
         this.encuestaId = encuestaId;
         this.pregunta = pregunta;
-        this.fechaCreacion = fechaCreacion;
         this.fechaFin = fechaFin;
         this.cancelada = cancelada;
         this.numPositivas = numPositivas;
@@ -41,12 +39,6 @@ public class RestEncuestaDto {
         this.pregunta = pregunta;
     }
 
-    public String getFechaCreacion() {
-        return fechaCreacion;
-    }
-    public void setFechaCreacion(String fechaCreacion) {
-        this.fechaCreacion = fechaCreacion;
-    }
     public String getFechaFin() {
         return fechaFin;
     }
@@ -84,7 +76,6 @@ public class RestEncuestaDto {
         return "RestEncuestaDto{" +
                 "encuestaId=" + encuestaId +
                 ", pregunta='" + pregunta + '\'' +
-                ", fechaCreacion='" + fechaCreacion + '\'' +
                 ", fechaFin='" + fechaFin + '\'' +
                 ", cancelada=" + cancelada +
                 ", numPositivas=" + numPositivas +

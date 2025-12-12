@@ -15,9 +15,6 @@ public class EncuestaToRestEncuestaDtoConversor {
         return new RestEncuestaDto(
                 encuesta.getEncuestaId(),
                 encuesta.getPregunta(),
-                encuesta.getFechaCreacion() != null
-                        ? encuesta.getFechaCreacion().format(FORMATTER)
-                        : null,
                 encuesta.getFechaFin() != null
                         ? encuesta.getFechaFin().format(FORMATTER)
                         : null,
@@ -31,9 +28,7 @@ public class EncuestaToRestEncuestaDtoConversor {
         return new Encuesta(
                 dto.getEncuestaId(),
                 dto.getPregunta(),
-                dto.getFechaCreacion() != null
-                        ? LocalDateTime.parse(dto.getFechaCreacion(), FORMATTER)
-                        : null,
+                LocalDateTime.now(),
                 dto.getFechaFin() != null
                         ? LocalDateTime.parse(dto.getFechaFin(), FORMATTER)
                         : null,

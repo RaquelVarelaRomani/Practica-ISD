@@ -26,7 +26,6 @@ public class JsonToRestEncuestaDtoConversor {
         encuestaObject
                 .put("encuestaId", encuesta.getEncuestaId())
                 .put("pregunta", encuesta.getPregunta())
-                .put("fechaCreacion", encuesta.getFechaCreacion())
                 .put("fechaFin", encuesta.getFechaFin())
                 .put("cancelada", encuesta.isCancelada())
                 .put("numPositivas", encuesta.getNumPositivas())
@@ -83,7 +82,6 @@ public class JsonToRestEncuestaDtoConversor {
             return new RestEncuestaDto(
                     encuestaId,
                     pregunta,
-                    null,
                     fechaFin,
                     false,
                     0,
