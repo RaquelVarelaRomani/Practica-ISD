@@ -53,18 +53,10 @@ public class RespuestaServiceTest {
         }
     }
 
-
-    // ------------------------
-    // MÉTODO AUXILIAR
-    // ------------------------
     private Encuesta crearEncuestaValida() throws Exception {
         Encuesta e = new Encuesta("Pregunta test", LocalDateTime.now().plusDays(2));
         return encuestaService.crearEncuesta(e);
     }
-
-    // ------------------------
-    // TESTS
-    // ------------------------
 
     @Test
     public void testResponderEncuestaValida() throws Exception {
