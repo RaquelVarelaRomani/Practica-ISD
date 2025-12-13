@@ -6,7 +6,7 @@ public class ClientEncuestaCanceladaException extends Exception {
     private Long encuestaId;
 
     public ClientEncuestaCanceladaException(Long encuestaId) {
-        super("Encuesta with id=\"" + encuestaId + "\" is canceled");
+        super("Encuesta con id=\"" + encuestaId + "\" ya está cancelada");
         this.encuestaId = encuestaId;
     }
 
