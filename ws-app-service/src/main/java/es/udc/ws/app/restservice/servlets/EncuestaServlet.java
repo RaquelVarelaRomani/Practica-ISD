@@ -107,7 +107,19 @@ public class EncuestaServlet extends RestHttpServletTemplate {
     protected void processPut(HttpServletRequest req, HttpServletResponse resp)
             throws IOException, InputValidationException, InstanceNotFoundException {
 
-        Long encuestaId = ServletUtils.getIdFromPath(req, "encuesta");
+        String path = req.getPathInfo();
+        if (path == null || !path.endsWith("/cancelar")) {
+            throw new InputValidationException("Invalid URL path for cancellation. Expected: /ID/cancelar");
+        }
+        String pathWithoutAction = path.substring(1, path.length() - "/cancelar".length());
+
+        Long encuestaId;
+
+        try{
+            encuestaId = Long.parseLong(pathWithoutAction);
+        } catch (NumberFormatException e){
+            throw new InputValidationException("Invalid encuesta ID in path: " +  pathWithoutAction);
+        }
 
         try {
             EncuestaServiceFactory.getService().cancelarEncuesta(encuestaId);
