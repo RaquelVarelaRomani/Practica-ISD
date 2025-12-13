@@ -91,8 +91,7 @@ public class JsonToClientExceptionConversor {
     }
     private static ClientEncuestaFinalizadaException toEncuestaFinalizadaException(JsonNode rootNode) {
         Long encuestaId = rootNode.get("encuestaId").longValue();
-        LocalDateTime fechaFin = LocalDateTime.parse(rootNode.get("fechaFin").textValue());
-        return new ClientEncuestaFinalizadaException(encuestaId, fechaFin);
+        return new ClientEncuestaFinalizadaException(encuestaId);
     }
 
     //409 CONFLICT

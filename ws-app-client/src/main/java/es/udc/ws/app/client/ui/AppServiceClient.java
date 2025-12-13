@@ -42,9 +42,9 @@ public class AppServiceClient {
                         " created successfully");
 
             } catch (InputValidationException ex) {
-                ex.printStackTrace(System.err);
+                System.err.println("Error de validación (addSurvey): " + ex.getMessage());
             } catch (Exception ex) {
-                ex.printStackTrace(System.err);
+                System.err.println("Error inesperado (addSurvey): " + ex.getMessage());
             }
 
 
@@ -67,9 +67,9 @@ public class AppServiceClient {
             } catch (ClientEncuestaFinalizadaException |
                      ClientEncuestaCanceladaException |
                      InstanceNotFoundException ex) {
-                ex.printStackTrace(System.err);
+                System.err.println("Error (answer): " + ex.getMessage());
             } catch (Exception ex) {
-                ex.printStackTrace(System.err);
+                System.err.println("Error inesperado (answer): " + ex.getMessage());
             }
 
 
@@ -87,9 +87,9 @@ public class AppServiceClient {
             } catch (ClientEncuestaFinalizadaException |
                      ClientEncuestaCanceladaException |
                      InstanceNotFoundException ex) {
-                ex.printStackTrace(System.err);
+                System.err.println("Error (cancel): " + ex.getMessage());
             } catch (Exception ex) {
-                ex.printStackTrace(System.err);
+                System.err.println("Error inesperado (cancel): " + ex.getMessage());
             }
 
 
@@ -110,7 +110,7 @@ public class AppServiceClient {
                 }
 
             } catch (Exception ex) {
-                ex.printStackTrace(System.err);
+                System.err.println("Error inesperado (findSurveys): " + ex.getMessage());
             }
 
         //findSurvey <surveyId>
@@ -126,9 +126,9 @@ public class AppServiceClient {
                 System.out.println(encuesta);
 
             } catch (InstanceNotFoundException ex) {
-                ex.printStackTrace(System.err);
+                System.err.println("Error (findSurvey): " + ex.getMessage());
             } catch (Exception ex) {
-                ex.printStackTrace(System.err);
+                System.err.println("Error inesperado (findSurvey): " + ex.getMessage());
             }
 
 
@@ -152,9 +152,9 @@ public class AppServiceClient {
                 }
 
             } catch (InstanceNotFoundException ex) {
-                ex.printStackTrace(System.err);
+                System.err.println("Error (findAnswers): " + ex.getMessage());
             } catch (Exception ex) {
-                ex.printStackTrace(System.err);
+                System.err.println("Error inesperado (findAnswers): " + ex.getMessage());
             }
 
         } else {
