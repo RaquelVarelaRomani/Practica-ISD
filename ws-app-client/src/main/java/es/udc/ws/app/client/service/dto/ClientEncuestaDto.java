@@ -7,21 +7,15 @@ public class ClientEncuestaDto {
 
     private Long encuestaId;
     private String pregunta;
-    private LocalDateTime fechaCreacion;
     private LocalDateTime fechaFin;
     private boolean cancelada;
     private int numPositivas;
     private int numNegativas;
 
-    public ClientEncuestaDto() {
-    }
-
-    public ClientEncuestaDto(Long encuestaId, String pregunta, LocalDateTime fechaCreacion,
-                             LocalDateTime fechaFin, boolean cancelada,
+    public ClientEncuestaDto(Long encuestaId, String pregunta, LocalDateTime fechaFin, boolean cancelada,
                              int numPositivas, int numNegativas) {
         this.encuestaId = encuestaId;
         this.pregunta = pregunta;
-        this.fechaCreacion = fechaCreacion;
         this.fechaFin = fechaFin;
         this.cancelada = cancelada;
         this.numPositivas = numPositivas;
@@ -42,14 +36,6 @@ public class ClientEncuestaDto {
 
     public void setPregunta(String pregunta) {
         this.pregunta = pregunta;
-    }
-
-    public LocalDateTime getFechaCreacion() {
-        return fechaCreacion;
-    }
-
-    public void setFechaCreacion(LocalDateTime fechaCreacion) {
-        this.fechaCreacion = fechaCreacion;
     }
 
     public LocalDateTime getFechaFin() {
@@ -88,7 +74,6 @@ public class ClientEncuestaDto {
     public String toString() {
         return "ClientEncuestaDto [encuestaId=" + encuestaId +
                 ", pregunta='" + pregunta + '\'' +
-                ", fechaCreacion=" + fechaCreacion +
                 ", fechaFin=" + fechaFin +
                 ", cancelada=" + cancelada +
                 ", numPositivas=" + numPositivas +
