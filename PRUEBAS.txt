@@ -1,0 +1,93 @@
+TERMINALES EN SIMBOLO DEL SISTEMA (NO POWERSHELL)
+-> En terminal 1 dejamos running TOMCAT
+Desde C:\software\apache-tomcat-11.0.15\bin -> startup.bat
+
+En terminal 2 (reiniciamos bd)
+mysql -u ws ws --password=ws
+
+SHOW TABLES;
+DELETE FROM encuesta;
+DELETE FROM respuesta;
+ALTER TABLE encuesta AUTO_INCREMENT = 1;
+
+//Con la BD limpia pasamos a probar los comandos mvn
+Primero instalamos dependencias y compilamos todo
+mvn clean install
+mvn clean compile
+
+Desde C:\software\isd-037\ws-app-client probamos
+
+//Añadir encuesta -> addSurvey
+
+mvn exec:java -Dexec.mainClass="es.udc.ws.app.client.ui.AppServiceClient" -Dexec.args="addSurvey 'Usas el servicio de comedor?' '2026-08-01T00:00:01'"
+mvn exec:java -Dexec.mainClass="es.udc.ws.app.client.ui.AppServiceClient" -Dexec.args="addSurvey 'Son útiles los cursos de formación?' '2026-09-01T00:00:01'"
+mvn exec:java -Dexec.mainClass="es.udc.ws.app.client.ui.AppServiceClient" -Dexec.args="addSurvey 'Usas el servicio de biblioteca?' '2026-12-01T00:00:01'"
+mvn exec:java -Dexec.mainClass="es.udc.ws.app.client.ui.AppServiceClient" -Dexec.args="addSurvey 'Vas a asistir a la cena de Navidad?' '2026-12-01T00:00:01'"
+
+//Deberían lanzar fallo.
+mvn exec:java -Dexec.mainClass="es.udc.ws.app.client.ui.AppServiceClient" -Dexec.args="addSurvey ' ' '2026-10-01T21:00:01'"
+mvn exec:java -Dexec.mainClass="es.udc.ws.app.client.ui.AppServiceClient" -Dexec.args="addSurvey 'Estás satisfecho con tu trabajo?' '2025-08-01T21:00:01'"
+
+//Responder a una encuesta -> answer
+mvn exec:java -Dexec.mainClass="es.udc.ws.app.client.ui.AppServiceClient" -Dexec.args="answer 'user1@udc.es' 1 true"
+mvn exec:java -Dexec.mainClass="es.udc.ws.app.client.ui.AppServiceClient" -Dexec.args="answer 'user2@udc.es' 1 false"
+mvn exec:java -Dexec.mainClass="es.udc.ws.app.client.ui.AppServiceClient" -Dexec.args="answer 'user1@udc.es' 3 false"
+mvn exec:java -Dexec.mainClass="es.udc.ws.app.client.ui.AppServiceClient" -Dexec.args="answer 'user3@udc.es' 3 true"
+
+//Actualización ansId 4
+mvn exec:java -Dexec.mainClass="es.udc.ws.app.client.ui.AppServiceClient" -Dexec.args="answer 'user3@udc.es' 3 false"
+
+//Encuesta que no existe
+mvn exec:java -Dexec.mainClass="es.udc.ws.app.client.ui.AppServiceClient" -Dexec.args="answer 'user1@udc.es' 9 true"
+
+
+//sentencia SQL que permita establecer “2025-09-01 10:00” como la fecha y hora de la encuesta con identificador 2 
+UPDATE Encuesta SET fechaFin='2025-09-01 00:00:00' WHERE encuestaId=2;
+
+//Responder a una encuesta con fecha de finalización pasada
+mvn exec:java -Dexec.mainClass="es.udc.ws.app.client.ui.AppServiceClient" -Dexec.args="answer 'user1@udc.es' 2 true"
+
+//Cancelar una encuesta
+mvn exec:java -Dexec.mainClass="es.udc.ws.app.client.ui.AppServiceClient" -Dexec.args="cancel 4"
+
+//Cancelar encuesta ya cancelada
+mvn exec:java -Dexec.mainClass="es.udc.ws.app.client.ui.AppServiceClient" -Dexec.args="cancel 4"
+
+//Cancelar encuesta finalizada (Falla)
+mvn exec:java -Dexec.mainClass="es.udc.ws.app.client.ui.AppServiceClient" -Dexec.args="cancel 2"
+
+//Cancelar encuesta que no existe
+mvn exec:java -Dexec.mainClass="es.udc.ws.app.client.ui.AppServiceClient" -Dexec.args="cancel 9"
+
+
+//Responder a una encuesta cancelada
+mvn exec:java -Dexec.mainClass="es.udc.ws.app.client.ui.AppServiceClient" -Dexec.args="answer 'user4@udc.es' 4 true"
+
+//Buscar encuestas por palabra clave con fecha finalización futura
+//Id 1 y 3
+mvn exec:java -Dexec.mainClass="es.udc.ws.app.client.ui.AppServiceClient" -Dexec.args="findSurveys 'servicio'"
+//Id 4
+mvn exec:java -Dexec.mainClass="es.udc.ws.app.client.ui.AppServiceClient" -Dexec.args="findSurveys 'cena'"
+//Id 1, 3, 4
+mvn exec:java -Dexec.mainClass="es.udc.ws.app.client.ui.AppServiceClient" -Dexec.args="findSurveys ' '"
+
+//Buscar encuesta por identificador
+//Id 2
+mvn exec:java -Dexec.mainClass="es.udc.ws.app.client.ui.AppServiceClient" -Dexec.args="findSurvey 2"
+
+//Falla porque no existe
+mvn exec:java -Dexec.mainClass="es.udc.ws.app.client.ui.AppServiceClient" -Dexec.args="findSurvey 9"
+
+
+//Buscar respuestas a una encuesta
+//Devuelve respuestas 1 y 2
+mvn exec:java -Dexec.mainClass="es.udc.ws.app.client.ui.AppServiceClient" -Dexec.args="findAnswers 1 false"
+
+//Devuelve respuesta 1
+mvn exec:java -Dexec.mainClass="es.udc.ws.app.client.ui.AppServiceClient" -Dexec.args="findAnswers 1 true"
+
+//Devuelve lista vacía
+mvn exec:java -Dexec.mainClass="es.udc.ws.app.client.ui.AppServiceClient" -Dexec.args="findAnswers 2 false"
+
+//Falla -> no existe
+mvn exec:java -Dexec.mainClass="es.udc.ws.app.client.ui.AppServiceClient" -Dexec.args="findAnswers 9 false"
