@@ -309,4 +309,69 @@ public class EncuestaServiceTest {
         }
     }
 
+    // -------------------------------------------------------------------------
+    // Tests Funcionalidad B (Extensión): borrarEncuesta
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void testBorrarEncuestaFinalizada() throws Exception {
+        // Insertar directamente en BD una encuesta con fecha pasada
+        Encuesta encuestaFinalizada = new Encuesta("Encuesta ya finalizada", LocalDateTime.now().minusDays(1));
+        encuestaFinalizada.setFechaCreacion(LocalDateTime.now().minusDays(2));
+
+        Encuesta creada;
+        try (var connection = DataSourceLocator.getDataSource(APP_DATA_SOURCE).getConnection()) {
+            connection.setAutoCommit(false);
+            creada = encuestaDao.create(connection, encuestaFinalizada);
+            connection.commit();
+        }
+
+        // No debe lanzar excepción
+        encuestaService.borrarEncuesta(creada.getEncuestaId());
+
+        // Verificar que ya no existe
+        final Long id = creada.getEncuestaId();
+        assertThrows(InstanceNotFoundException.class,
+                () -> encuestaService.buscarEncuestaPorId(id),
+                "La encuesta borrada no debe encontrarse");
+    }
+
+    @Test
+    public void testBorrarEncuestaCancelada() throws Exception {
+        Encuesta creada = encuestaService.crearEncuesta(getValidEncuesta());
+        encuestaService.cancelarEncuesta(creada.getEncuestaId());
+
+        // No debe lanzar excepción
+        encuestaService.borrarEncuesta(creada.getEncuestaId());
+
+        // Verificar que ya no existe
+        final Long id = creada.getEncuestaId();
+        assertThrows(InstanceNotFoundException.class,
+                () -> encuestaService.buscarEncuestaPorId(id),
+                "La encuesta cancelada y borrada no debe encontrarse");
+    }
+
+    @Test
+    public void testBorrarEncuestaActivaLanzaExcepcion() throws Exception {
+        Encuesta creada = encuestaService.crearEncuesta(getValidEncuesta());
+
+        try {
+            assertThrows(
+                    es.udc.ws.app.model.encuestaservice.exceptions.EncuestaActivaException.class,
+                    () -> encuestaService.borrarEncuesta(creada.getEncuestaId()),
+                    "Debe lanzar EncuestaActivaException al borrar una encuesta activa"
+            );
+        } finally {
+            // Limpiar: cancelar para que el @BeforeEach no tenga problemas de FK
+            encuestaService.cancelarEncuesta(creada.getEncuestaId());
+        }
+    }
+
+    @Test
+    public void testBorrarEncuestaInexistenteLanzaExcepcion() {
+        assertThrows(InstanceNotFoundException.class,
+                () -> encuestaService.borrarEncuesta(-999L),
+                "Debe lanzar InstanceNotFoundException al borrar una encuesta inexistente");
+    }
+
 }
