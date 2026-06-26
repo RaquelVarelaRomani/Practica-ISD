@@ -167,4 +167,23 @@ public class EncuestaServiceImpl implements EncuestaService {
             throw new RuntimeException("Error al acceder a la base de datos", e);
         }
     }
+
+    @Override
+    public List<Encuesta> buscarEncuestasPopulares(int minRespuestas,
+                                                    LocalDateTime fechaInicio,
+                                                    LocalDateTime fechaFin)
+            throws InputValidationException {
+
+        if (minRespuestas < 0) {
+            throw new InputValidationException(
+                    "El número mínimo de respuestas no puede ser negativo.");
+        }
+
+        try (Connection connection = dataSource.getConnection()) {
+            return encuestaDao.findPopularSurveys(connection, minRespuestas, fechaInicio, fechaFin);
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al buscar encuestas populares", e);
+        }
+    }
 }
