@@ -37,6 +37,19 @@
         <url-pattern>/respuestas/*</url-pattern>
     </servlet-mapping>
 
+    <servlet>
+        <display-name>EncuestaPopularServlet</display-name>
+        <servlet-name>EncuestaPopularServlet</servlet-name>
+        <servlet-class>
+            es.udc.ws.app.restservice.servlets.EncuestaPopularServlet
+        </servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>EncuestaPopularServlet</servlet-name>
+        <url-pattern>/encuestas-populares/*</url-pattern>
+    </servlet-mapping>
+
    <!-- Thrift service -->
    <!-- Fill XXX and uncomment the following lines --> 
    <!--
