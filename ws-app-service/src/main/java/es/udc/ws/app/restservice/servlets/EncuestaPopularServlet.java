@@ -36,7 +36,7 @@ public class EncuestaPopularServlet extends RestHttpServletTemplate {
     protected void processGet(HttpServletRequest req, HttpServletResponse resp)
             throws IOException, InputValidationException, InstanceNotFoundException {
 
-        // --- minRespuestas (obligatorio, >= 0) ---
+        // minRespuestas (obligatorio >= 0)
         String minRespuestasParam = req.getParameter("minRespuestas");
         if (minRespuestasParam == null || minRespuestasParam.isBlank()) {
             throw new InputValidationException("El parámetro 'minRespuestas' es obligatorio.");

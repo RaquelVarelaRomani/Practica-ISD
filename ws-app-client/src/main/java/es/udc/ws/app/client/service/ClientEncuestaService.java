@@ -22,7 +22,7 @@ public interface ClientEncuestaService {
 
     List<ClientRespuestaDto> obtenerRespuestas(Long encuestaId, boolean soloPositivas) throws InstanceNotFoundException;
 
-    // Funcionalidad B (Extensión): Borrar encuesta finalizada o cancelada
+    // Funcionalidad 8 (Extensión): Borrar encuesta finalizada o cancelada
     void borrarEncuesta(Long encuestaId) throws InstanceNotFoundException, ClientEncuestaActivaException;
 
     // Funcionalidad 7 (Extensión): Encuestas populares con fecha de finalización futura
