@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import es.udc.ws.app.client.service.ClientEncuestaService;
 import es.udc.ws.app.client.service.dto.ClientEncuestaDto;
 import es.udc.ws.app.client.service.dto.ClientRespuestaDto;
+import es.udc.ws.app.client.service.exceptions.ClientEncuestaActivaException;
 import es.udc.ws.app.client.service.exceptions.ClientEncuestaCanceladaException;
 import es.udc.ws.app.client.service.exceptions.ClientEncuestaFinalizadaException;
 import es.udc.ws.app.client.service.rest.json.JsonToClientExceptionConversor;
@@ -130,6 +131,25 @@ public class RestClientEncuestaService implements ClientEncuestaService {
             return JsonToClientRespuestaDtoConversor.toClientRespuestaDtos(response.getEntity().getContent());
 
         } catch (InstanceNotFoundException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    // Funcionalidad B (Extensión): Borrar encuesta finalizada o cancelada
+    @Override
+    public void borrarEncuesta(Long encuestaId)
+            throws InstanceNotFoundException, ClientEncuestaActivaException {
+
+        try {
+            ClassicHttpResponse response = (ClassicHttpResponse) Request
+                    .delete(getEndpointAddress() + "encuestas/" + encuestaId)
+                    .execute().returnResponse();
+
+            validateStatusCode(HttpStatus.SC_NO_CONTENT, response);
+
+        } catch (InstanceNotFoundException | ClientEncuestaActivaException e) {
             throw e;
         } catch (Exception e) {
             throw new RuntimeException(e);

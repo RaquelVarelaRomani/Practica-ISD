@@ -6,6 +6,7 @@ import es.udc.ws.app.client.service.dto.ClientEncuestaDto;
 import es.udc.ws.app.client.service.dto.ClientRespuestaDto;
 import es.udc.ws.app.client.service.exceptions.ClientEncuestaFinalizadaException;
 import es.udc.ws.app.client.service.exceptions.ClientEncuestaCanceladaException;
+import es.udc.ws.app.client.service.exceptions.ClientEncuestaActivaException;
 import es.udc.ws.util.exceptions.InputValidationException;
 import es.udc.ws.util.exceptions.InstanceNotFoundException;
 import java.util.List;
@@ -157,6 +158,25 @@ public class AppServiceClient {
                 System.err.println("Error inesperado (findAnswers): " + ex.getMessage());
             }
 
+        //removeSurvey <surveyId>
+        } else if ("removeSurvey".equalsIgnoreCase(args[0])) {
+
+            validateArgs(args, 2, new int[] {1});
+
+            try {
+                service.borrarEncuesta(Long.parseLong(args[1]));
+
+                System.out.println("Survey " + args[1] +
+                        " removed successfully");
+
+            } catch (InstanceNotFoundException ex) {
+                System.err.println("Error (removeSurvey): " + ex.getMessage());
+            } catch (ClientEncuestaActivaException ex) {
+                System.err.println("Error (removeSurvey): " + ex.getMessage());
+            } catch (Exception ex) {
+                System.err.println("Error inesperado (removeSurvey): " + ex.getMessage());
+            }
+
         } else {
             printUsageAndExit();
         }
@@ -192,7 +212,8 @@ public class AppServiceClient {
                         "  cancel <surveyId>\n" +
                         "  findSurveys <keyword>\n" +
                         "  findSurvey <surveyId>\n" +
-                        "  findAnswers <surveyId> <true|false>\n"
+                        "  findAnswers <surveyId> <true|false>\n" +
+                        "  removeSurvey <surveyId>\n"
         );
     }
 }

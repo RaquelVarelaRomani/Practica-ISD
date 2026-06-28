@@ -19,4 +19,7 @@ public interface ClientEncuestaService {
     Long responderEncuesta(Long encuestaId, String emailUsuario, boolean respuestaPositiva) throws InstanceNotFoundException, ClientEncuestaFinalizadaException, ClientEncuestaCanceladaException;
 
     List<ClientRespuestaDto> obtenerRespuestas(Long encuestaId, boolean soloPositivas) throws InstanceNotFoundException;
+
+    // Funcionalidad B (Extensión): Borrar encuesta finalizada o cancelada
+    void borrarEncuesta(Long encuestaId) throws InstanceNotFoundException, ClientEncuestaActivaException;
 }
