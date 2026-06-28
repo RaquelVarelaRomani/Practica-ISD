@@ -4,12 +4,14 @@ import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import es.udc.ws.app.client.service.ClientEncuestaService;
 import es.udc.ws.app.client.service.dto.ClientEncuestaDto;
+import es.udc.ws.app.client.service.dto.ClientEncuestaPopularDto;
 import es.udc.ws.app.client.service.dto.ClientRespuestaDto;
 import es.udc.ws.app.client.service.exceptions.ClientEncuestaActivaException;
 import es.udc.ws.app.client.service.exceptions.ClientEncuestaCanceladaException;
 import es.udc.ws.app.client.service.exceptions.ClientEncuestaFinalizadaException;
 import es.udc.ws.app.client.service.rest.json.JsonToClientExceptionConversor;
 import es.udc.ws.app.client.service.rest.json.JsonToClientEncuestaDtoConversor;
+import es.udc.ws.app.client.service.rest.json.JsonToClientEncuestaPopularDtoConversor;
 import es.udc.ws.app.client.service.rest.json.JsonToClientRespuestaDtoConversor;
 import es.udc.ws.util.configuration.ConfigurationParametersManager;
 import es.udc.ws.util.exceptions.InputValidationException;
@@ -24,6 +26,7 @@ import org.apache.hc.core5.http.HttpStatus;
 
 import java.io.*;
 import java.net.URLEncoder;
+import java.time.LocalDate;
 import java.util.List;
 
 public class RestClientEncuestaService implements ClientEncuestaService {
@@ -137,7 +140,7 @@ public class RestClientEncuestaService implements ClientEncuestaService {
         }
     }
 
-    // Funcionalidad B (Extensión): Borrar encuesta finalizada o cancelada
+    // Funcionalidad 8 (Extensión): Borrar encuesta finalizada o cancelada
     @Override
     public void borrarEncuesta(Long encuestaId)
             throws InstanceNotFoundException, ClientEncuestaActivaException {
@@ -150,6 +153,29 @@ public class RestClientEncuestaService implements ClientEncuestaService {
             validateStatusCode(HttpStatus.SC_NO_CONTENT, response);
 
         } catch (InstanceNotFoundException | ClientEncuestaActivaException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    // Funcionalidad 7 (Extensión): Encuestas populares con fecha de finalización futura
+    @Override
+    public List<ClientEncuestaPopularDto> buscarEncuestasPopulares(int minRespuestas, LocalDate fechaInicio)
+            throws InputValidationException {
+
+        try {
+            String url = getEndpointAddress() + "encuestas-populares?minRespuestas=" + minRespuestas
+                    + "&fechaInicio=" + URLEncoder.encode(fechaInicio.toString(), "UTF-8");
+
+            ClassicHttpResponse response = (ClassicHttpResponse) Request.get(url).execute().returnResponse();
+
+            validateStatusCode(HttpStatus.SC_OK, response);
+
+            return JsonToClientEncuestaPopularDtoConversor.toClientEncuestaPopularDtos(
+                    response.getEntity().getContent());
+
+        } catch (InputValidationException e) {
             throw e;
         } catch (Exception e) {
             throw new RuntimeException(e);
