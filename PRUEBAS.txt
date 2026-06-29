@@ -9,6 +9,7 @@ SHOW TABLES;
 DELETE FROM encuesta;
 DELETE FROM respuesta;
 ALTER TABLE encuesta AUTO_INCREMENT = 1;
+ALTER TABLE respuesta AUTO_INCREMENT = 1;
 
 //Con la BD limpia pasamos a probar los comandos mvn
 Primero instalamos dependencias y compilamos todo
