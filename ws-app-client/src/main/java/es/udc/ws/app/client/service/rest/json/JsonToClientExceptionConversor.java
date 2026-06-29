@@ -3,6 +3,7 @@ package es.udc.ws.app.client.service.rest.json;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
+import es.udc.ws.app.client.service.exceptions.ClientEncuestaActivaException;
 import es.udc.ws.app.client.service.exceptions.ClientEncuestaCanceladaException;
 import es.udc.ws.app.client.service.exceptions.ClientEncuestaFinalizadaException;
 import es.udc.ws.util.exceptions.*;
@@ -79,6 +80,8 @@ public class JsonToClientExceptionConversor {
                 String errorType = rootNode.get("errorType").textValue();
                 if (errorType.equals("EncuestaFinalizada")) {
                     return toEncuestaFinalizadaException(rootNode);
+                } else if (errorType.equals("EncuestaActiva")) {
+                    return toEncuestaActivaException(rootNode);
                 } else {
                     throw new ParsingException("Unrecognized error type: " + errorType);
                 }
@@ -92,6 +95,11 @@ public class JsonToClientExceptionConversor {
     private static ClientEncuestaFinalizadaException toEncuestaFinalizadaException(JsonNode rootNode) {
         Long encuestaId = rootNode.get("encuestaId").longValue();
         return new ClientEncuestaFinalizadaException(encuestaId);
+    }
+
+    private static ClientEncuestaActivaException toEncuestaActivaException(JsonNode rootNode) {
+        Long encuestaId = rootNode.get("encuestaId").longValue();
+        return new ClientEncuestaActivaException(encuestaId);
     }
 
     //409 CONFLICT

@@ -309,4 +309,144 @@ public class EncuestaServiceTest {
         }
     }
 
+    // -------------------------------------------------------------------------
+    // Tests Funcionalidad 8 (Extensión): borrarEncuesta
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void testBorrarEncuestaFinalizada() throws Exception {
+        // Insertar directamente en BD una encuesta con fecha pasada
+        Encuesta encuestaFinalizada = new Encuesta("Encuesta ya finalizada", LocalDateTime.now().minusDays(1));
+        encuestaFinalizada.setFechaCreacion(LocalDateTime.now().minusDays(2));
+
+        Encuesta creada;
+        try (var connection = DataSourceLocator.getDataSource(APP_DATA_SOURCE).getConnection()) {
+            connection.setAutoCommit(false);
+            creada = encuestaDao.create(connection, encuestaFinalizada);
+            connection.commit();
+        }
+
+        // No debe lanzar excepción
+        encuestaService.borrarEncuesta(creada.getEncuestaId());
+
+        // Verificar que ya no existe
+        final Long id = creada.getEncuestaId();
+        assertThrows(InstanceNotFoundException.class,
+                () -> encuestaService.buscarEncuestaPorId(id),
+                "La encuesta borrada no debe encontrarse");
+    }
+
+    @Test
+    public void testBorrarEncuestaCancelada() throws Exception {
+        Encuesta creada = encuestaService.crearEncuesta(getValidEncuesta());
+        encuestaService.cancelarEncuesta(creada.getEncuestaId());
+
+        // No debe lanzar excepción
+        encuestaService.borrarEncuesta(creada.getEncuestaId());
+
+        // Verificar que ya no existe
+        final Long id = creada.getEncuestaId();
+        assertThrows(InstanceNotFoundException.class,
+                () -> encuestaService.buscarEncuestaPorId(id),
+                "La encuesta cancelada y borrada no debe encontrarse");
+    }
+
+    @Test
+    public void testBorrarEncuestaActivaLanzaExcepcion() throws Exception {
+        Encuesta creada = encuestaService.crearEncuesta(getValidEncuesta());
+
+        try {
+            assertThrows(
+                    es.udc.ws.app.model.encuestaservice.exceptions.EncuestaActivaException.class,
+                    () -> encuestaService.borrarEncuesta(creada.getEncuestaId()),
+                    "Debe lanzar EncuestaActivaException al borrar una encuesta activa"
+            );
+        } finally {
+            // Limpiar: cancelar para que el @BeforeEach no tenga problemas de FK
+            encuestaService.cancelarEncuesta(creada.getEncuestaId());
+        }
+    }
+
+    @Test
+    public void testBorrarEncuestaInexistenteLanzaExcepcion() {
+        assertThrows(InstanceNotFoundException.class,
+                () -> encuestaService.borrarEncuesta(-999L),
+                "Debe lanzar InstanceNotFoundException al borrar una encuesta inexistente");
+    }
+
+    // -------------------------------------------------------------------------
+    // Tests Funcionalidad 7 (Extensión): buscarEncuestasPopulares
+    // -------------------------------------------------------------------------
+
+    /**
+     * Helper: inserta una respuesta directamente en BD para una encuesta dada.
+     */
+    private void insertarRespuesta(Long encuestaId, boolean positiva) throws Exception {
+        try (var connection = DataSourceLocator.getDataSource(APP_DATA_SOURCE).getConnection()) {
+            connection.setAutoCommit(true);
+            var ps = connection.prepareStatement(
+                    "INSERT INTO Respuesta (encuestaId, emailUsuario, respuestaPositiva, fechaRespuesta) VALUES (?, ?, ?, ?)");
+            ps.setLong(1, encuestaId);
+            ps.setString(2, "test@test.com");
+            ps.setBoolean(3, positiva);
+            ps.setTimestamp(4, java.sql.Timestamp.valueOf(LocalDateTime.now()));
+            ps.executeUpdate();
+        }
+    }
+
+    @Test
+    public void testBuscarEncuestasPopulares_minRespuestasNegativo_lanzaError() {
+        assertThrows(InputValidationException.class,
+                () -> encuestaService.buscarEncuestasPopulares(-1, null, null),
+                "Debe lanzar InputValidationException cuando minRespuestas es negativo");
+    }
+
+    @Test
+    public void testBuscarEncuestasPopulares_sinRespuestas_ceroMinimo() throws Exception {
+        // Una encuesta activa sin respuestas debe aparecer con minRespuestas=0
+        Encuesta creada = encuestaService.crearEncuesta(getValidEncuesta("¿Encuesta sin respuestas?"));
+
+        var resultado = encuestaService.buscarEncuestasPopulares(0, null, null);
+
+        assertTrue(resultado.stream().anyMatch(e -> e.getEncuestaId().equals(creada.getEncuestaId())),
+                "La encuesta sin respuestas debe aparecer con minRespuestas=0");
+    }
+
+    @Test
+    public void testBuscarEncuestasPopulares_conMinRespuestas() throws Exception {
+        Encuesta conRespuestas   = encuestaService.crearEncuesta(getValidEncuesta("¿Te gusta el café?"));
+        Encuesta sinRespuestas   = encuestaService.crearEncuesta(getValidEncuesta("¿Te gusta el té?"));
+
+        // Solo añadir respuestas a la primera
+        insertarRespuesta(conRespuestas.getEncuestaId(), true);
+        insertarRespuesta(conRespuestas.getEncuestaId(), false);
+
+        var resultado = encuestaService.buscarEncuestasPopulares(2, null, null);
+
+        assertTrue(resultado.stream().anyMatch(e -> e.getEncuestaId().equals(conRespuestas.getEncuestaId())),
+                "La encuesta con 2 respuestas debe aparecer con minRespuestas=2");
+        assertFalse(resultado.stream().anyMatch(e -> e.getEncuestaId().equals(sinRespuestas.getEncuestaId())),
+                "La encuesta sin respuestas no debe aparecer con minRespuestas=2");
+    }
+
+    @Test
+    public void testBuscarEncuestasPopulares_conFechas() throws Exception {
+        // Encuesta con fechaFin dentro del rango
+        Encuesta dentro = encuestaService.crearEncuesta(
+                new Encuesta("¿Encuesta dentro del rango?", LocalDateTime.now().plusDays(10)));
+        // Encuesta con fechaFin fuera del rango (muy lejana)
+        Encuesta fuera = encuestaService.crearEncuesta(
+                new Encuesta("¿Encuesta fuera del rango?", LocalDateTime.now().plusDays(200)));
+
+        LocalDateTime inicio = LocalDateTime.now();
+        LocalDateTime fin    = LocalDateTime.now().plusDays(90);
+
+        var resultado = encuestaService.buscarEncuestasPopulares(0, inicio, fin);
+
+        assertTrue(resultado.stream().anyMatch(e -> e.getEncuestaId().equals(dentro.getEncuestaId())),
+                "La encuesta dentro del rango debe aparecer");
+        assertFalse(resultado.stream().anyMatch(e -> e.getEncuestaId().equals(fuera.getEncuestaId())),
+                "La encuesta fuera del rango no debe aparecer");
+    }
+
 }

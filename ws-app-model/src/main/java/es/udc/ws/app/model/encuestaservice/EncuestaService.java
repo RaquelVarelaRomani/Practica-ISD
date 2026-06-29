@@ -3,6 +3,8 @@ package es.udc.ws.app.model.encuestaservice;
 import es.udc.ws.app.model.encuesta.Encuesta;
 import es.udc.ws.app.model.encuestaservice.exceptions.EncuestaCanceladaException;
 import es.udc.ws.app.model.encuestaservice.exceptions.EncuestaFinalizadaException;
+import es.udc.ws.app.model.encuestaservice.exceptions.EncuestaActivaException;
+import java.time.LocalDateTime;
 import java.util.List;
 import es.udc.ws.util.exceptions.InstanceNotFoundException;
 import es.udc.ws.util.exceptions.InputValidationException;
@@ -20,5 +22,18 @@ public interface EncuestaService {
 
     //Funcionalidad 5: Cancelar encuesta
     public void cancelarEncuesta(Long encuestaId) throws InstanceNotFoundException, EncuestaFinalizadaException, EncuestaCanceladaException;
+
+//  =========================================
+//                 EXTENSIÓN
+//  =========================================
+
+    //Funcionalidad 7: Encuestas populares con fecha de finalización futura
+    public List<Encuesta> buscarEncuestasPopulares(int minRespuestas,
+                                                    LocalDateTime fechaInicio,
+                                                    LocalDateTime fechaFin)
+            throws InputValidationException;
+    
+    //Funcionalidad 8: Borrar encuesta finalizada o cancelada
+    public void borrarEncuesta(Long encuestaId) throws InstanceNotFoundException, EncuestaActivaException;
 
 }

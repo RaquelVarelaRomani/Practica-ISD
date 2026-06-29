@@ -3,12 +3,15 @@ package es.udc.ws.app.client.ui;
 import es.udc.ws.app.client.service.ClientEncuestaService;
 import es.udc.ws.app.client.service.ClientEncuestaServiceFactory;
 import es.udc.ws.app.client.service.dto.ClientEncuestaDto;
+import es.udc.ws.app.client.service.dto.ClientEncuestaPopularDto;
 import es.udc.ws.app.client.service.dto.ClientRespuestaDto;
 import es.udc.ws.app.client.service.exceptions.ClientEncuestaFinalizadaException;
 import es.udc.ws.app.client.service.exceptions.ClientEncuestaCanceladaException;
+import es.udc.ws.app.client.service.exceptions.ClientEncuestaActivaException;
 import es.udc.ws.util.exceptions.InputValidationException;
 import es.udc.ws.util.exceptions.InstanceNotFoundException;
 import java.util.List;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public class AppServiceClient {
@@ -157,6 +160,52 @@ public class AppServiceClient {
                 System.err.println("Error inesperado (findAnswers): " + ex.getMessage());
             }
 
+        //findPopularSurveys <min_answers> <date>
+        } else if ("findPopularSurveys".equalsIgnoreCase(args[0])) {
+
+            validateArgs(args, 3, new int[] {1});
+
+            try {
+                List<ClientEncuestaPopularDto> encuestas =
+                        service.buscarEncuestasPopulares(
+                                Integer.parseInt(args[1]),
+                                LocalDate.parse(args[2])
+                        );
+
+                System.out.println("Found " + encuestas.size() + " popular survey(s)");
+
+                for (ClientEncuestaPopularDto e : encuestas) {
+                    System.out.println("Id: " + e.getEncuestaId() +
+                            ", Porcentaje afirmativas: " + String.format("%.2f%%", e.getPorcentajeAfirmativas()) +
+                            ", D\u00edas hasta finalizaci\u00f3n: " + e.getDiasHastaFinalizacion() +
+                            ", Cancelada: " + (e.isCancelada() ? "S\u00ed" : "No"));
+                }
+
+            } catch (InputValidationException ex) {
+                System.err.println("Error (findPopularSurveys): " + ex.getMessage());
+            } catch (Exception ex) {
+                System.err.println("Error inesperado (findPopularSurveys): " + ex.getMessage());
+            }
+
+        //removeSurvey <surveyId>
+        } else if ("removeSurvey".equalsIgnoreCase(args[0])) {
+
+            validateArgs(args, 2, new int[] {1});
+
+            try {
+                service.borrarEncuesta(Long.parseLong(args[1]));
+
+                System.out.println("Survey " + args[1] +
+                        " removed successfully");
+
+            } catch (InstanceNotFoundException ex) {
+                System.err.println("Error (removeSurvey): " + ex.getMessage());
+            } catch (ClientEncuestaActivaException ex) {
+                System.err.println("Error (removeSurvey): " + ex.getMessage());
+            } catch (Exception ex) {
+                System.err.println("Error inesperado (removeSurvey): " + ex.getMessage());
+            }
+
         } else {
             printUsageAndExit();
         }
@@ -192,7 +241,9 @@ public class AppServiceClient {
                         "  cancel <surveyId>\n" +
                         "  findSurveys <keyword>\n" +
                         "  findSurvey <surveyId>\n" +
-                        "  findAnswers <surveyId> <true|false>\n"
+                        "  findAnswers <surveyId> <true|false>\n" +
+                        "  findPopularSurveys <min_answers> <date>\n" +
+                        "  removeSurvey <surveyId>\n"
         );
     }
 }

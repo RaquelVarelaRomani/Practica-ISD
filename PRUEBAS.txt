@@ -41,7 +41,7 @@ mvn exec:java -Dexec.mainClass="es.udc.ws.app.client.ui.AppServiceClient" -Dexec
 mvn exec:java -Dexec.mainClass="es.udc.ws.app.client.ui.AppServiceClient" -Dexec.args="answer 'user1@udc.es' 9 true"
 
 
-//sentencia SQL que permita establecer “2025-09-01 10:00” como la fecha y hora de la encuesta con identificador 2 
+//sentencia SQL que permita establecer "2025-09-01 10:00" como la fecha y hora de la encuesta con identificador 2 
 UPDATE Encuesta SET fechaFin='2025-09-01 00:00:00' WHERE encuestaId=2;
 
 //Responder a una encuesta con fecha de finalización pasada
@@ -91,3 +91,54 @@ mvn exec:java -Dexec.mainClass="es.udc.ws.app.client.ui.AppServiceClient" -Dexec
 
 //Falla -> no existe
 mvn exec:java -Dexec.mainClass="es.udc.ws.app.client.ui.AppServiceClient" -Dexec.args="findAnswers 9 false"
+
+// ============================================================
+//                         EXTENSION    
+// ============================================================
+
+// Estado de la BD:
+//   Encuesta 1 -> activa,     fechaFin=2026-08-01, 2 respuestas (1 pos, 1 neg) -> 50%
+//   Encuesta 2 -> finalizada, fechaFin=2025-09-01 (pasada por UPDATE), 0 respuestas
+//   Encuesta 3 -> activa,     fechaFin=2026-12-01, 2 respuestas (0 pos, 2 neg) -> 0%
+//   Encuesta 4 -> cancelada,  fechaFin=2026-12-01, 0 respuestas
+//
+// Datos de las "encuestas populares":
+//   Id 1: Porcentaje afirmativas: 50,00%, Dias hasta finalizacion: <dias hasta 2026-08-01>, Cancelada: No
+//   Id 3: Porcentaje afirmativas: 0,00%,  Dias hasta finalizacion: <dias hasta 2026-12-01>, Cancelada: No
+//   Id 4: Porcentaje afirmativas: 0,00%,  Dias hasta finalizacion: <dias hasta 2026-12-01>, Cancelada: Si
+
+//Devuelve encuesta con id 1 (2 respuestas)
+mvn exec:java -Dexec.mainClass="es.udc.ws.app.client.ui.AppServiceClient" -Dexec.args="findPopularSurveys 1 2026-07-31"
+
+//Devuelve encuestas con id 3 (2 respuestas) e id 4 (0 respuestas, cancelada)
+//(rango 2026-11-30 + 90 dias = hasta 2027-03-01, ambas tienen fechaFin 2026-12-01)
+mvn exec:java -Dexec.mainClass="es.udc.ws.app.client.ui.AppServiceClient" -Dexec.args="findPopularSurveys 0 2026-11-30"
+
+//Devuelve encuesta con id 3 (2 respuestas)
+mvn exec:java -Dexec.mainClass="es.udc.ws.app.client.ui.AppServiceClient" -Dexec.args="findPopularSurveys 2 2026-11-30"
+
+//Devuelve lista vacia
+mvn exec:java -Dexec.mainClass="es.udc.ws.app.client.ui.AppServiceClient" -Dexec.args="findPopularSurveys 0 2027-08-01"
+
+//Falla -> numero de respuestas invalido (minRespuestas < 0)
+mvn exec:java -Dexec.mainClass="es.udc.ws.app.client.ui.AppServiceClient" -Dexec.args="findPopularSurveys -1 2026-07-31"
+
+//Falla -> fecha debe ser futura
+mvn exec:java -Dexec.mainClass="es.udc.ws.app.client.ui.AppServiceClient" -Dexec.args="findPopularSurveys 5 2025-07-31"
+
+
+
+
+// PASO 11 - Borrar encuesta (removeSurvey)
+
+//Borra encuesta con id 2 (finalizada - fechaFin pasada)
+mvn exec:java -Dexec.mainClass="es.udc.ws.app.client.ui.AppServiceClient" -Dexec.args="removeSurvey 2"
+
+//Borra encuesta con id 4 (cancelada)
+mvn exec:java -Dexec.mainClass="es.udc.ws.app.client.ui.AppServiceClient" -Dexec.args="removeSurvey 4"
+
+//Falla -> la encuesta con id 1 aun no ha finalizado y no esta cancelada
+mvn exec:java -Dexec.mainClass="es.udc.ws.app.client.ui.AppServiceClient" -Dexec.args="removeSurvey 1"
+
+//Falla -> no se encuentra encuesta con id 2 (ya fue borrada)
+mvn exec:java -Dexec.mainClass="es.udc.ws.app.client.ui.AppServiceClient" -Dexec.args="removeSurvey 2"

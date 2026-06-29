@@ -8,6 +8,7 @@ import es.udc.ws.app.model.encuesta.SqlEncuestaDao;
 import es.udc.ws.app.model.encuesta.SqlEncuestaDaoFactory;
 import es.udc.ws.app.model.encuestaservice.exceptions.EncuestaCanceladaException;
 import es.udc.ws.app.model.encuestaservice.exceptions.EncuestaFinalizadaException;
+import es.udc.ws.app.model.encuestaservice.exceptions.EncuestaActivaException;
 import es.udc.ws.util.exceptions.InputValidationException;
 import es.udc.ws.util.exceptions.InstanceNotFoundException;
 import es.udc.ws.util.sql.DataSourceLocator;
@@ -125,6 +126,64 @@ public class EncuestaServiceImpl implements EncuestaService {
 
         } catch (SQLException e) {
             throw new RuntimeException("Error al acceder a la base de datos", e);
+        }
+    }
+
+    @Override
+    public void borrarEncuesta(Long encuestaId)
+            throws InstanceNotFoundException, EncuestaActivaException {
+
+        try (Connection connection = dataSource.getConnection()) {
+            connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
+            connection.setAutoCommit(false);
+
+            try {
+                Encuesta encuesta = encuestaDao.findById(connection, encuestaId);
+
+                boolean finalizada = !encuesta.getFechaFin().isAfter(LocalDateTime.now());
+                boolean cancelada  = encuesta.isCancelada();
+
+                if (!finalizada && !cancelada) {
+                    connection.commit();
+                    throw new EncuestaActivaException(encuestaId);
+                }
+
+                // La bd ya tiene el delete on cascade así que borra automáticamente las respuestas
+                encuestaDao.remove(connection, encuestaId);
+                connection.commit();
+
+            } catch (InstanceNotFoundException | EncuestaActivaException e) {
+                connection.commit();
+                throw e;
+            } catch (SQLException e) {
+                connection.rollback();
+                throw new RuntimeException("Error SQL al borrar la encuesta", e);
+            } catch (RuntimeException | Error e) {
+                connection.rollback();
+                throw e;
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al acceder a la base de datos", e);
+        }
+    }
+
+    @Override
+    public List<Encuesta> buscarEncuestasPopulares(int minRespuestas,
+                                                    LocalDateTime fechaInicio,
+                                                    LocalDateTime fechaFin)
+            throws InputValidationException {
+
+        if (minRespuestas < 0) {
+            throw new InputValidationException(
+                    "El número mínimo de respuestas no puede ser negativo.");
+        }
+
+        try (Connection connection = dataSource.getConnection()) {
+            return encuestaDao.findPopularSurveys(connection, minRespuestas, fechaInicio, fechaFin);
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al buscar encuestas populares", e);
         }
     }
 }

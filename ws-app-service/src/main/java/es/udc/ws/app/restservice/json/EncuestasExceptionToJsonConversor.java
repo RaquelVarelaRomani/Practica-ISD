@@ -3,6 +3,7 @@ package es.udc.ws.app.restservice.json;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import es.udc.ws.app.model.encuestaservice.exceptions.EncuestaActivaException;
 import es.udc.ws.app.model.encuestaservice.exceptions.EncuestaCanceladaException;
 import es.udc.ws.app.model.encuestaservice.exceptions.EncuestaFinalizadaException;
 import es.udc.ws.util.exceptions.InputValidationException;
@@ -47,6 +48,16 @@ public class EncuestasExceptionToJsonConversor {
 
         exceptionObject.put("errorType", "InputValidation");
         exceptionObject.put("message", ex.getMessage());
+
+        return exceptionObject;
+    }
+
+    public static ObjectNode toEncuestaActivaException(EncuestaActivaException ex) {
+
+        ObjectNode exceptionObject = JsonNodeFactory.instance.objectNode();
+
+        exceptionObject.put("errorType", "EncuestaActiva");
+        exceptionObject.put("encuestaId", ex.getEncuestaId());
 
         return exceptionObject;
     }

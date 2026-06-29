@@ -148,4 +148,67 @@ public abstract class AbstractSqlEncuestaDao implements SqlEncuestaDao {
         }
     }
 
+//  =========================================
+//                 EXTENSIÓN
+//  =========================================
+
+    @Override
+    public List<Encuesta> findPopularSurveys(Connection connection, int minRespuestas,
+                                              LocalDateTime fechaInicio, LocalDateTime fechaFin) {
+
+        // Construye la query dinámicamente según los parámetros opcionales
+        StringBuilder sb = new StringBuilder(
+                "SELECT e.encuestaId, e.pregunta, e.fechaCreacion, e.fechaFin, e.cancelada, " +
+                "COUNT(CASE WHEN r.respuestaPositiva = TRUE THEN 1 END) AS numPositivas, " +
+                "COUNT(CASE WHEN r.respuestaPositiva = FALSE THEN 1 END) AS numNegativas " +
+                "FROM Encuesta e " +
+                "LEFT JOIN Respuesta r ON e.encuestaId = r.encuestaId " +
+                "WHERE e.fechaFin > NOW() ");
+
+        if (fechaInicio != null) {
+            sb.append("AND e.fechaFin >= ? ");
+        }
+        if (fechaFin != null) {
+            sb.append("AND e.fechaFin <= ? ");
+        }
+
+        sb.append("GROUP BY e.encuestaId, e.pregunta, e.fechaCreacion, e.fechaFin, e.cancelada ");
+        sb.append("HAVING COUNT(r.respuestaId) >= ? ");
+        sb.append("ORDER BY e.fechaFin ASC");
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sb.toString())) {
+
+            int paramIndex = 1;
+            if (fechaInicio != null) {
+                preparedStatement.setTimestamp(paramIndex++, Timestamp.valueOf(fechaInicio));
+            }
+            if (fechaFin != null) {
+                preparedStatement.setTimestamp(paramIndex++, Timestamp.valueOf(fechaFin));
+            }
+            preparedStatement.setInt(paramIndex, minRespuestas);
+
+            ResultSet resultSet = preparedStatement.executeQuery();
+            List<Encuesta> encuestas = new ArrayList<>();
+
+            while (resultSet.next()) {
+                int i = 1;
+                Long encuestaId     = resultSet.getLong(i++);
+                String pregunta     = resultSet.getString(i++);
+                LocalDateTime fechaCreacion = resultSet.getTimestamp(i++).toLocalDateTime();
+                LocalDateTime fechaFinDB    = resultSet.getTimestamp(i++).toLocalDateTime();
+                boolean cancelada   = resultSet.getBoolean(i++);
+                int numPositivas    = resultSet.getInt(i++);
+                int numNegativas    = resultSet.getInt(i++);
+
+                encuestas.add(new Encuesta(encuestaId, pregunta, fechaCreacion,
+                        fechaFinDB, cancelada, numPositivas, numNegativas));
+            }
+
+            return encuestas;
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al buscar encuestas populares", e);
+        }
+    }
+
 }

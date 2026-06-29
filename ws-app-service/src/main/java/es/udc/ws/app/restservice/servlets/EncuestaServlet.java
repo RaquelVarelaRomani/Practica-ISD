@@ -12,6 +12,7 @@ import es.udc.ws.app.model.encuesta.Encuesta;
 import es.udc.ws.app.model.encuestaservice.EncuestaServiceFactory;
 import es.udc.ws.app.model.encuestaservice.exceptions.EncuestaCanceladaException;
 import es.udc.ws.app.model.encuestaservice.exceptions.EncuestaFinalizadaException;
+import es.udc.ws.app.model.encuestaservice.exceptions.EncuestaActivaException;
 import es.udc.ws.app.restservice.dto.RestEncuestaDto;
 import es.udc.ws.app.restservice.dto.EncuestaToRestEncuestaDtoConversor;
 import es.udc.ws.app.restservice.json.EncuestasExceptionToJsonConversor;
@@ -145,6 +146,34 @@ public class EncuestaServlet extends RestHttpServletTemplate {
                     HttpServletResponse.SC_CONFLICT,
                     EncuestasExceptionToJsonConversor
                             .toEncuestaCanceladaException(ex),
+                    null
+            );
+        }
+    }
+
+    /* DELETE /encuestas/{id}  -> borrar encuesta finalizada o cancelada */
+    @Override
+    protected void processDelete(HttpServletRequest req, HttpServletResponse resp)
+            throws IOException, InputValidationException, InstanceNotFoundException {
+
+        Long encuestaId = ServletUtils.getIdFromPath(req, "encuesta");
+
+        try {
+            EncuestaServiceFactory.getService().borrarEncuesta(encuestaId);
+
+            ServletUtils.writeServiceResponse(
+                    resp,
+                    HttpServletResponse.SC_NO_CONTENT,
+                    null,
+                    null
+            );
+
+        } catch (EncuestaActivaException ex) {
+            ServletUtils.writeServiceResponse(
+                    resp,
+                    HttpServletResponse.SC_FORBIDDEN,
+                    EncuestasExceptionToJsonConversor
+                            .toEncuestaActivaException(ex),
                     null
             );
         }
